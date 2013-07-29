@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Selector Test</title>
+  <style>
+    #div1 > ol[start="2"] li:first-child + li ~ :nth-of-type(2n-1),
+    .div2  input[type="text"][maxlength="3"]:not(:first-child):not([placeholder])
+    {
+      background: red;
+    }
+  </style>
+</head>
+<body>
+  <div id="div1">
+    <ol start="2">
+      <li>1111</li>
+      <li>2222</li>
+      <li>3333</li>
+      <li>4444</li>
+      <li>5555</li>
+    </ol>
+  </div>
+
+  <div class="div2">
+    <input type="file">
+    <input type="text" maxlength="3">
+    <input id="radio1" type="radio"><label for="radio1">radio</label>
+    <input type="button" value="button">
+    <input id="checkbox1" type="checkbox"><label for="checkbox1">checkbox</label>
+    <p>
+      <input type="text" value='name'>
+      <input type="text" maxlength="3" placeholder="placeholder">
+    </p>
+  </div>
+
+  <script src="selector.js"></script>
+  <script>
+    var selectors = '#div1 > ol[start="2"] li:first-child + li ~ :nth-of-type(2n-1), .div2 input[type~="text"][maxlength="3"]:not(:first-child):not([placeholder])';
+
+    // console.log(selectors);
+    // var reg = /[>+~](?![^\(\)]*?\))/;
+    // console.log(reg.exec(':nth-child(2n+1)'));
+    // console.log(JSON.stringify(tokenize(':first-child'), null, '  '));
+    var elems = querySelectorAll(selectors);
+    for (var i = 0; i < elems.length; i++) {
+      elems[i].style.border = 'solid 10px blue';
+    }
+  </script>
+</body>
+</html>
