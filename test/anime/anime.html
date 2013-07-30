@@ -4,6 +4,9 @@
   <meta charset="UTF-8">
   <title>Anime.js test</title>
   <style>
+    body {
+      font-size: 10px;
+    }
     #container {
       position: relative;
     }
@@ -21,6 +24,7 @@
   </style>
 </head>
 <body>
+  <label for="select_easing">Easing:</label>
   <select name="" id="select_easing">
     <optgroup label="Linear">
       <option value="" selected>linear</option>
@@ -76,6 +80,7 @@
     <option value="">easeInOutBounce</option>
     </optgroup>
   </select>
+  <label for="select_duration">Duration:</label>
   <select name="" id="select_duration">
     <option value="">100</option>
     <option value="">300</option>
@@ -89,7 +94,7 @@
   <button id='btn_redraw'>redraw</button>
   <div id="container">
     <div id="box"></div>
-    <canvas id='canvas' width="1200" height="600"></canvas>
+    <canvas id='canvas' width="800" height="600"></canvas>
   </div>
 
   <script src="../../src/anime.js"></script>
@@ -100,8 +105,15 @@
           redrawBtn = document.getElementById('btn_redraw');
       var easing = easingSel.options[easingSel.selectedIndex].text,
           duration = durationSel.options[durationSel.selectedIndex].text;
-      var canvas = document.getElementById('canvas');
-      var tween;
+      var canvas = document.getElementById('canvas'),
+          width = canvas.width,
+          height = canvas.height;
+      var x = 100, y = 100;
+      var tween = Anime({
+            begin: {x: 0, y: 0},
+            end: {x: width - 2 * x, y: height - 2 * y},
+            delay: 1000
+          });
 
       draw(canvas, easing, duration);
 
@@ -123,13 +135,9 @@
         easing = easing || 'linear';
         duration = duration ? parseInt(duration, 10) : 2000;
 
-        tween && tween.stop();
-
         var box = document.getElementById('box');
-        var width = canvas.width,
-            height = canvas.height;
         var gd = canvas.getContext('2d');
-        var x = 100, y = 100;
+        var lastPoint = null;
         
         box.style.left = x - 20 + 'px';
         box.style.top = height - y + 'px';
@@ -173,32 +181,36 @@
         gd.fillText(easing + ' ' + duration + 'ms', 20, 40);
 
         // 动画
-        tween = anime({
-          begin: {x: 0, y: 0},
-          end: {x: width - 2 * x, y: height - 2 * y},
-          easing: {y: easing},
-          duration: duration,
-          delay: 1000,
-        })
-        .onstart(function (current) {
-          console.clear();
-          console.log('start');
-          console.log(this._current);
-          gd.beginPath();
-          gd.moveTo(current.x + x, height - current.y - y);
-          gd.strokeStyle = '#0d9';
-          gd.lineWidth = '2';
-        })
-        .onupdate(function (current) {
-          console.log(this._current);
-          gd.lineTo(current.x + x, height - current.y - y);
-          gd.stroke();
-          box.style.top = height - current.y - y + 'px';
-        })
-        .oncomplete(function (current) {
-          console.log('end');
-        })
-        .start();
+        tween.stop()
+          .easing({y: easing})
+          .duration(duration)
+          .off()
+          .onStart(function (current) {
+            // console.clear();
+            console.log('start');
+            lastPoint = {x: current.x, y: current.y};
+          })
+          .onUpdate(function (current) {
+            console.log('update:', this._current, lastPoint);
+            gd.beginPath();
+            gd.strokeStyle = '#0d9';
+            gd.lineWidth = '2';
+            gd.moveTo(lastPoint.x + x + 0.5, height - lastPoint.y - y + 0.5);
+            gd.lineTo(current.x + x + 0.5, height - current.y - y + 0.5);
+            gd.stroke();
+            lastPoint = {x: current.x, y: current.y};
+            gd.beginPath();
+            gd.strokeStyle = '#f2f2f2';
+            gd.lineWidth = '1';
+            gd.moveTo(current.x + x + 0.5, height - y + 0.5);
+            gd.lineTo(current.x + x + 0.5, height - current.y - y + 0.5);
+            gd.stroke();
+            box.style.top = height - current.y - y + 'px';
+          })
+          .onComplete(function (current) {
+            console.log('end');
+          })
+          .start();
       }
     };
   </script>
