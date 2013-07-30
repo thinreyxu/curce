@@ -132,6 +132,8 @@
       };
 
       function draw (canvas, easing, duration) {
+        console.clear();
+        
         easing = easing || 'linear';
         duration = duration ? parseInt(duration, 10) : 2000;
 
@@ -186,12 +188,11 @@
           .duration(duration)
           .off()
           .onStart(function (current) {
-            // console.clear();
             console.log('start');
             lastPoint = {x: current.x, y: current.y};
           })
           .onUpdate(function (current) {
-            console.log('update:', this._current, lastPoint);
+            console.log('update:', this._current);
             gd.beginPath();
             gd.strokeStyle = '#0d9';
             gd.lineWidth = '2';
