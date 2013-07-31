@@ -169,7 +169,7 @@
     backIn: function (r) {
       var k = 2;
 
-      return r * r * ((1 + k) * r - k);
+      return Math.pow(r, 2) * ((1 + k) * r - k);
     },
     backOut: function (r) {
       var k = 2;
@@ -180,7 +180,7 @@
       var k = 2;
 
       if (r <= 0.5) {
-        return 2 * r * r * (2 * (k + 1) * r - k);
+        return 2 * Math.pow(r, 2) * (2 * (k + 1) * r - k);
       }
       else {
         return (2 * Math.pow(r - 1, 2) * (2 * (k + 1) * r - k - 2) + 1);
@@ -317,16 +317,6 @@
           _stopAnime();
         }
       }
-    }
-  }
-
-  // 获取当前时间
-  function _now () {
-    if (window.performance && window.performance.now) {
-      return window.performance.now();
-    }
-    else {
-      return new Date().getTime();
     }
   }
 
@@ -538,6 +528,16 @@
     }
   };
 
+  // 获取当前时间
+  function _now () {
+    if (window.performance && window.performance.now) {
+      return window.performance.now();
+    }
+    else {
+      return new Date().getTime();
+    }
+  }
+
   function _requestAnimationFrame (fn) {
     _requestAnimationFrame = window.requestAnimationFrame || 
                              window.webkitRequestAnimationFrame ||
@@ -560,4 +560,5 @@
     _cancelAnimationFrame(id);
   }
 
+  return exports;
 })(window);
