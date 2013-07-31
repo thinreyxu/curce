@@ -30,54 +30,54 @@
       <option value="" selected>linear</option>
     </optgroup>
     <optgroup label="Quad">
-    <option value="">easeInQuad</option>
-    <option value="">easeOutQuad</option>
-    <option value="">easeInOutQuad</option>
+    <option value="">quadIn</option>
+    <option value="">quadOut</option>
+    <option value="">quadInOut</option>
     </optgroup>
     <optgroup label="Cubic">
-    <option value="">easeInCubic</option>
-    <option value="">easeOutCubic</option>
-    <option value="">easeInOutCubic</option>
+    <option value="">cubicIn</option>
+    <option value="">cubicOut</option>
+    <option value="">cubicInOut</option>
     </optgroup>
     <optgroup label="Quart">
-    <option value="">easeInQuart</option>
-    <option value="">easeOutQuart</option>
-    <option value="">easeInOutQuart</option>
+    <option value="">quartIn</option>
+    <option value="">quartOut</option>
+    <option value="">quartInOut</option>
     </optgroup>
     <optgroup label="Quint">
-    <option value="">easeInQuint</option>
-    <option value="">easeOutQuint</option>
-    <option value="">easeInOutQuint</option>
+    <option value="">quintIn</option>
+    <option value="">quintOut</option>
+    <option value="">quintInOut</option>
     </optgroup>
     <optgroup label="Sine">
-    <option value="">easeInSine</option>
-    <option value="">easeOutSine</option>
-    <option value="">easeInOutSine</option>
+    <option value="">sineIn</option>
+    <option value="">sineOut</option>
+    <option value="">sineInOut</option>
     </optgroup>
     <optgroup label="Circ">
-    <option value="">easeInCirc</option>
-    <option value="">easeOutCirc</option>
-    <option value="">easeInOutCirc</option>
+    <option value="">circIn</option>
+    <option value="">circOut</option>
+    <option value="">circInOut</option>
     </optgroup>
     <optgroup label="Expo">
-    <option value="">easeInExpo</option>
-    <option value="">easeOutExpo</option>
-    <option value="">easeInOutExpo</option>
+    <option value="">expoIn</option>
+    <option value="">expoOut</option>
+    <option value="">expoInOut</option>
     </optgroup>
     <optgroup label="Elastic">
-    <option value="">easeInElastic</option>
-    <option value="">easeOutElastic</option>
-    <option value="">easeInOutElastic</option>
+    <option value="">elasticIn</option>
+    <option value="">elasticOut</option>
+    <option value="">elasticInOut</option>
     </optgroup>
     <optgroup label="Back">
-    <option value="">easeInBack</option>
-    <option value="">easeOutBack</option>
-    <option value="">easeInOutBack</option>
+    <option value="">backIn</option>
+    <option value="">backOut</option>
+    <option value="">backInOut</option>
     </optgroup>
     <optgroup label="Bounce">
-    <option value="">easeInBounce</option>
-    <option value="">easeOutBounce</option>
-    <option value="">easeInOutBounce</option>
+    <option value="">bounceIn</option>
+    <option value="">bounceOut</option>
+    <option value="">bounceInOut</option>
     </optgroup>
   </select>
   <label for="select_duration">Duration:</label>
@@ -97,7 +97,7 @@
     <canvas id='canvas' width="800" height="600"></canvas>
   </div>
 
-  <script src="../../js/anime.js"></script>
+  <script src="../../src/anime.js"></script>
   <script>
     window.onload = function () {
       var easingSel = document.getElementById('select_easing'),
@@ -132,8 +132,6 @@
       };
 
       function draw (canvas, easing, duration) {
-        console.clear();
-        
         easing = easing || 'linear';
         duration = duration ? parseInt(duration, 10) : 2000;
 
@@ -146,9 +144,9 @@
         
         gd.clearRect(0, 0, width, height);
 
-        gd.strokeStyle = '#f2f2f2';
+        gd.strokeStyle = '#f7f7f7';
         gd.lineWidth = '1';
-        gd.lineCap = 'round';
+        // gd.lineCap = 'round';
         gd.lineJoin = 'round';
 
         // 画格线
@@ -188,11 +186,20 @@
           .duration(duration)
           .off()
           .onStart(function (current) {
+            // console.clear();
             console.log('start');
             lastPoint = {x: current.x, y: current.y};
           })
           .onUpdate(function (current) {
             console.log('update:', this._current);
+
+            gd.beginPath();
+            gd.strokeStyle = '#f2f2f2';
+            gd.lineWidth = '1';
+            gd.moveTo(current.x + x + 0.5, height - y + 0.5);
+            gd.lineTo(current.x + x + 0.5, height - current.y - y + 0.5);
+            gd.stroke();
+
             gd.beginPath();
             gd.strokeStyle = '#0d9';
             gd.lineWidth = '2';
@@ -200,12 +207,7 @@
             gd.lineTo(current.x + x + 0.5, height - current.y - y + 0.5);
             gd.stroke();
             lastPoint = {x: current.x, y: current.y};
-            gd.beginPath();
-            gd.strokeStyle = '#f2f2f2';
-            gd.lineWidth = '1';
-            gd.moveTo(current.x + x + 0.5, height - y + 0.5);
-            gd.lineTo(current.x + x + 0.5, height - current.y - y + 0.5);
-            gd.stroke();
+
             box.style.top = height - current.y - y + 'px';
           })
           .onComplete(function (current) {

@@ -18,13 +18,13 @@
       return r;
     },
     // 二次
-    easeInQuad: function (r) {
+    quadIn: function (r) {
       return r * r;
     },
-    easeOutQuad: function (r) {
+    quadOut: function (r) {
       return r * (2 - r);
     },
-    easeInOutQuad: function (r) {
+    quadInOut: function (r) {
       if (r <= 0.5) {
         return 2 * r * r;
       }
@@ -33,13 +33,13 @@
       }
     },
     // 三次
-    easeInCubic: function (r) {
+    cubicIn: function (r) {
       return Math.pow(r, 3);
     },
-    easeOutCubic: function (r) {
+    cubicOut: function (r) {
       return (Math.pow(r - 1, 3) + 1);
     },
-    easeInOutCubic: function (r) {
+    cubicInOut: function (r) {
       if (r <= 0.5) {
         return Math.pow(r, 3) * 4;
       }
@@ -48,13 +48,13 @@
       }
     },
     // 四次
-    easeInQuart: function (r) {
+    quartIn: function (r) {
       return Math.pow(r, 4);
     },
-    easeOutQuart: function (r) {
+    quartOut: function (r) {
       return (1 - Math.pow(r - 1, 4));
     },
-    easeInOutQuart: function (r) {
+    quartInOut: function (r) {
       if (r <= 0.5) {
         return Math.pow(r, 4) * 8;
       }
@@ -63,13 +63,13 @@
       }
     },
     // 五次
-    easeInQuint: function (r) {
+    quintIn: function (r) {
       return Math.pow(r, 5);
     },
-    easeOutQuint: function (r) {
+    quintOut: function (r) {
       return (Math.pow(r - 1, 5) + 1);
     },
-    easeInOutQuint: function (r) {
+    quintInOut: function (r) {
       if (r <= 0.5) {
         return Math.pow(r, 5) * 16;
       }
@@ -78,17 +78,17 @@
       }
     },
     // 三角函数
-    easeInSine: function (r) {
+    sineIn: function (r) {
       return (1 - Math.cos(Math.PI / 2 * r));
     },
-    easeOutSine: function (r) {
+    sineOut: function (r) {
       return Math.sin(Math.PI / 2 * r);
     },
-    easeInOutSine: function (r) {
+    sineInOut: function (r) {
       return (1 - Math.cos(Math.PI * r)) / 2;
     },
     // 指数/对数
-    easeInExpo: function (r) {
+    expoIn: function (r) {
       if (r === 0) {
         return b;
       }
@@ -96,7 +96,7 @@
         return Math.pow(1024, r - 1);
       }
     },
-    easeOutExpo: function (r) {
+    expoOut: function (r) {
       if (r === 1) {
         return e;
       }
@@ -104,7 +104,7 @@
         return (1 - Math.pow(1024, -r));
       }
     },
-    easeInOutExpo: function (r) {
+    expoInOut: function (r) {
       if (r === 0) {
         return b;
       }
@@ -120,13 +120,13 @@
       }
     },
     // 圆
-    easeInCirc: function (r) {
+    circIn: function (r) {
       return ( 1 - Math.sqrt(1 - r * r));
     },
-    easeOutCirc: function (r) {
+    circOut: function (r) {
       return Math.sqrt(r * (2 - r));
     },
-    easeInOutCirc: function (r) {
+    circInOut: function (r) {
       if (r <= 0.5) {
         return (0.5 - Math.sqrt(0.25 - r * r));
       }
@@ -135,7 +135,7 @@
       }
     },
     // 弹性
-    easeInElastic: function (r) {
+    elasticIn: function (r) {
       if (r === 0) {
         return b;
       }
@@ -143,7 +143,7 @@
         return Math.pow(1024, r - 1) * Math.sin(9 / 2 * Math.PI * r);
       }
     },
-    easeOutElastic: function (r) {
+    elasticOut: function (r) {
       if (r === 1) {
         return e;
       }
@@ -151,7 +151,7 @@
         return (1 - Math.pow(1024, -r) * Math.cos(9 / 2 * Math.PI * r));
       }
     },
-    easeInOutElastic: function (r) {
+    elasticInOut: function (r) {
       if (r === 0) {
         return b;
       }
@@ -166,21 +166,21 @@
       }
     },
     // 回复
-    easeInBack: function (r) {
+    backIn: function (r) {
       var k = 2;
 
-      return r * r * ((1 + k) * r - k);
+      return Math.pow(r, 2) * ((1 + k) * r - k);
     },
-    easeOutBack: function (r) {
+    backOut: function (r) {
       var k = 2;
 
       return (Math.pow(r - 1, 2) * ((k + 1) * r - 1) + 1);
     },
-    easeInOutBack: function (r) {
+    backInOut: function (r) {
       var k = 2;
 
       if (r <= 0.5) {
-        return 2 * r * r * (2 * (k + 1) * r - k);
+        return 2 * Math.pow(r, 2) * (2 * (k + 1) * r - k);
       }
       else {
         return (2 * Math.pow(r - 1, 2) * (2 * (k + 1) * r - k - 2) + 1);
@@ -192,7 +192,7 @@
     // t2 = k * t1 = 0.17795216648; 2 * t2 = 0.35590433296
     // t3 = k * t2 = 0.07080950551; 2 * t3 = 0.14161901102
     // t4 = k * t3 = 0.02817603275; 2 * t4 = 0.05635206550
-    easeInBounce: function (r) {
+    bounceIn: function (r) {
       var t1 = 0.4472135955;
       var t2 = 0.17795216648;
       var t3 = 0.07080950551;
@@ -214,7 +214,7 @@
         return (1 - 5 * Math.pow(r - 1, 2));
       }
     },
-    easeOutBounce: function (r) {
+    bounceOut: function (r) {
       var t1 = 0.4472135955;
       var t2 = 0.17795216648;
       var t3 = 0.07080950551;
@@ -236,7 +236,7 @@
         return (5 * Math.pow(r - t1 - 2 * t2 - 2 * t3 - t4, 2) - 5 * Math.pow(t4, 2) + 1);
       }
     },
-    easeInOutBounce: function (r) {
+    bounceInOut: function (r) {
       var t1 = 0.4472135955;
       var t2 = 0.17795216648;
       var t3 = 0.07080950551;
@@ -317,16 +317,6 @@
           _stopAnime();
         }
       }
-    }
-  }
-
-  // 获取当前时间
-  function _now () {
-    if (window.performance && window.performance.now) {
-      return window.performance.now();
-    }
-    else {
-      return new Date().getTime();
     }
   }
 
@@ -538,6 +528,16 @@
     }
   };
 
+  // 获取当前时间
+  function _now () {
+    if (window.performance && window.performance.now) {
+      return window.performance.now();
+    }
+    else {
+      return new Date().getTime();
+    }
+  }
+
   function _requestAnimationFrame (fn) {
     _requestAnimationFrame = window.requestAnimationFrame || 
                              window.webkitRequestAnimationFrame ||
@@ -560,4 +560,5 @@
     _cancelAnimationFrame(id);
   }
 
+  return exports;
 })(window);
