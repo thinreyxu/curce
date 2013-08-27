@@ -269,7 +269,7 @@
       }
 
       // 处理设置
-      var s = extend (defaults, options);
+      var s = extend(defaults, options);
 
       // 导出 cb 到全局作用域
       var cbname = s.cbname + uuid();
