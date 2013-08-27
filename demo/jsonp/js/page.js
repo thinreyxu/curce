@@ -103,40 +103,40 @@
       request && request.abort();
 
       switch (hase) {
-        // case '#interior_design':
-        //   param = {
-        //     data: {
-        //       type: 'search',
-        //       term: 'interior design',
-        //       page: page++
-        //     }
-        //   };
-        //   break;
-
-        // case '#recent':
-        //   param = {
-        //     path: '/recent',
-        //     data: {
-        //       page: page++
-        //     }
-        //   };
-        //   break;
-
-        // case '#popular':
-        //   param = {
-        //     path: '/popular',
-        //     data: {
-        //       page: page++
-        //     }
-        //   };
-        //   break;
-
         case '#architecture':
-        default:
           param = {
             data: {
               type: 'search',
               term: 'architecture',
+              page: page++
+            }
+          };
+          break;
+
+        case '#interior_design':
+          param = {
+            data: {
+              type: 'search',
+              term: 'interior design',
+              page: page++
+            }
+          };
+          break;
+
+        case '#recent':
+          param = {
+            path: '/recent',
+            data: {
+              page: page++
+            }
+          };
+          break;
+
+        case '#popular':
+        default:
+          param = {
+            path: '/popular',
+            data: {
               page: page++
             }
           };
