@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>JSONP Demo</title>
+  <link rel="stylesheet" href="css/page.css">
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>Wookmark</h1>
+    <div id="nav" class="nav"><a href="#architecture">Architecture</a> &middot; <a href="#interior_design">Interior Design</a> &middot; <a class="on" href="#popular">Popular</a> &middot; <a href="#recent">Recent</a></div>
+  </div>
+  <div id="content" class="content">
+    <div id="note" class="prompt note">
+      <span>This is a demo page powered by <a href="http://www.wookmark.com/about/api"><strong>Wookmark JSON API</strong></a>.</span>
+      <a id="note-close" class="prompt-close" href="javascript:;">X</a>
+    </div>
+    <div id="content-wrapper" class="content-wrapper"></div>
+    <div id="loading" class="loading"><b class="prompt">Loading Images ...</b></div>
+  </div>
+</div>
+<script id="item-template" type="text/x-template">
+  <li data-itemid="{{itemID}}" class="item">
+    <a class="img-wrapper" style="height:{{height}}px;" href="{{url}}">
+      <img data-src="{{preview}}" alt="">
+      <b class="mask"></b>
+    </a>
+    <p>
+      <a href="{{url}}" title="{{title}}">{{title}}</a>
+    </p>
+  </li>
+</script>
+<script src="../../src/queryString.js"></script>
+<script src="../../src/jsonp.js"></script>
+<script src="js/common.js"></script>
+<script src="js/page.js"></script>
+</body>
+</html>
