@@ -251,9 +251,9 @@ h1 {
   line-height: 1.2em;
   font-weight: normal;
   word-wrap: break-word;
-  word-break: keep-all;
+  word-break: break-all;
   max-height: 2.4em;
-  text-overflow: elipses;
+  text-overflow: ellipsis;
   overflow: hidden;
 }
 

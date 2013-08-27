@@ -40,7 +40,9 @@
         loadingScrollThrottle = 100,
         lowestLoadingPos,
 
-        unloadedImages = [];
+        unloadedImages = [],
+
+        request,
 
         transitionSupport = isStyleFeatureSupported('transition'),
         transitionEndEvent = transitionSupport.vendorID ? transitionSupport.vendorID + 'TransitionEnd' : 'transitionEnd';
@@ -75,11 +77,11 @@
     function setNav (hash) {
       var foundItem, defaultItem, href;
 
-      console.log(hash);
+      // console.log(hash);
 
       for (var i = 0, len = navItems.length; i < len; i++) {
         href = navItems[i].getAttribute('href');
-        console.log(href);
+        // console.log(href);
         if (href === hash) {
           foundItem = navItems[i];
         }
@@ -98,41 +100,43 @@
       itemID = 0;
       page = 0;
 
+      request && request.abort();
+
       switch (hase) {
+        // case '#interior_design':
+        //   param = {
+        //     data: {
+        //       type: 'search',
+        //       term: 'interior design',
+        //       page: page++
+        //     }
+        //   };
+        //   break;
+
+        // case '#recent':
+        //   param = {
+        //     path: '/recent',
+        //     data: {
+        //       page: page++
+        //     }
+        //   };
+        //   break;
+
+        // case '#popular':
+        //   param = {
+        //     path: '/popular',
+        //     data: {
+        //       page: page++
+        //     }
+        //   };
+        //   break;
+
         case '#architecture':
+        default:
           param = {
             data: {
               type: 'search',
               term: 'architecture',
-              page: page++
-            }
-          };
-          break;
-
-        case '#interior_design':
-          param = {
-            data: {
-              type: 'search',
-              term: 'interior design',
-              page: page++
-            }
-          };
-          break;
-
-        case '#recent':
-          param = {
-            path: '/recent',
-            data: {
-              page: page++
-            }
-          };
-          break;
-
-        case '#popular':
-        default:
-          param = {
-            path: '/popular',
-            data: {
               page: page++
             }
           };
@@ -240,13 +244,13 @@
 
       param.data.page += 1;
 
-      start && start.call(null); 
+      start && start.call(null);
 
-      jsonp({
+      request = jsonp({
         url: url,
         data: param.data,
         cbname: 'callback',
-        cb: function (res) {
+        success: function (res) {
           var err;
           if (res.length) {
             done && done.call(this, res);
@@ -255,8 +259,14 @@
             err = new Error('No More Images');
             fail && fail.call(this, err);
           }
+          request = undefined;
+        },
+        error: function (err) {
+          fail && fail.call(this, err);
+          request = undefined;
         }
       });
+      // setTimeout(function () {request && request.abort();}, 500);
     }
 
     function calcColumnCount () {
