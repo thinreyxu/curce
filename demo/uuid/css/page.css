@@ -1,0 +1,28 @@
+body {
+  font: 14px/1.8 Helvetica, Arial,'Microsoft Yahei','Wenquanyi Micro Hei','Hiragino Sans GB', STXihei,SimSun,sans-serif;
+  color: #555;
+  width: 660px;
+  margin: 20px auto;
+}
+h1, h2 {
+  border-bottom: solid 1px #ededed;
+  line-height: 1em;
+  padding: 1em 0;
+}
+h1 small {
+  font-weight: normal;
+  font-size: 14px;
+}
+small {
+  color: #999;
+}
+pre, code {
+  margin: 1rem 0;
+  padding: 0.1em 0.2em;
+  background: #f7f7f7;
+  border: solid 1px #f2f2f2;
+  border-radius: 5px;
+}
+code {
+  vertical-align: baseline;
+}
