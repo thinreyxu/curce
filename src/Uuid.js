@@ -3,10 +3,8 @@
     define(init);
   }
   else {
-    var result = init();
     _exports = _exports.curce || (_exports.curce = {});
-    _exports.uuid = result.uuid;
-    _exports.uuid32 = result.uuid32;
+    _exports.Uuid = init();
   }
 
   function init () {
