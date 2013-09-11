@@ -1,0 +1,17 @@
+body {
+  font-size: 10px;
+}
+#container {
+  position: relative;
+}
+#box {
+  width: 6px;
+  height: 6px;
+  margin: -3px;
+  background: red;
+  border-radius: 50%;
+  position: absolute;
+}
+#canvas {
+  border: solid 1px #999;
+}

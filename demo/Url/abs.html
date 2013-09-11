@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Url.abs() Demo</title>
+  <link rel="stylesheet" href="http://getbootstrap.com/dist/css/bootstrap.css">
+  <link rel="stylesheet" href="css/page.css">
+</head>
+<body>
+  <div class="container">
+    <div class="page-header">
+      <h1>Url.abs() Demo</h1>
+    </div>
+    <p class="text-muted">Insert urls into the "Original urls" textarea, each one on a single line.</p>
+    <div class="row">
+      <div class="col-sm-5">
+        <h3>Original urls</h3>
+        <textarea class="form-control" id="taOrigin" cols="30" rows="10"></textarea>
+      </div>
+      <div class="col-sm-2 text-center">
+        <button id="btnConvert" type="button" class="btn btn-lg btn-primary">Convert!</button>
+      </div>
+      <div class="col-sm-5">
+        <h3>Result</h3>
+        <textarea class="form-control" id="taResult" cols="30" rows="10" readonly></textarea>
+      </div>
+    </div>
+  </div>
+
+  <script data-main="js/page.js" src="http://requirejs.org/docs/release/2.1.8/minified/require.js"></script>
+</body>
+</html>
