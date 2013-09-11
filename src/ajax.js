@@ -1,13 +1,13 @@
 (function (_exports) {
   if (window.define) {
-    define(['uuid', 'extend', 'QueryString'], init);
+    define(['Uuid', 'extend', 'QueryString'], init);
   }
   else {
     _exports = _exports.curce || (_exports.curce = {});
-    _exports.ajax = init(_exports.uuid, _exports.extend, _exports.QueryString);
+    _exports.ajax = init(_exports.Uuid, _exports.extend, _exports.QueryString);
   }
 
-  function init (uuid, extend, QueryString) {
+  function init (Uuid, extend, QueryString) {
 
     var defaults = {
       method: 'GET',
@@ -42,7 +42,7 @@
       // 拼接查询字符串
       if ((s.method === 'GET' || s.method === 'DELETE')) {
         url += url.indexOf('&') != -1 ? '&' : '?';
-        url += (s.data ? s.data + '&' : '') + 't=' + uuid.uuid();
+        url += (s.data ? s.data + '&' : '') + 't=' + Uuid.uuid();
       }
 
       // 连接服务器

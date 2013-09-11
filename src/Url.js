@@ -10,7 +10,6 @@
   function init () {
 
     function abs (url) {
-      console.log(url);
       if (!(url = url.replace(/^\s+|\s+$/g, ''))) {
         return '';
       }
@@ -50,5 +49,5 @@
     return {
       abs: abs
     };
-  };
+  }
 })(window);
