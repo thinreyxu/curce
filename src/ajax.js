@@ -1,13 +1,13 @@
 (function (_exports) {
   if (window.define) {
-    define(['Uuid', 'extend', 'QueryString'], init);
+    define(['uuid', 'extend', 'querystring'], init);
   }
   else {
     _exports = _exports.curce || (_exports.curce = {});
-    _exports.ajax = init(_exports.Uuid, _exports.extend, _exports.QueryString);
+    _exports.ajax = init(_exports.uuid, _exports.extend, _exports.querystring);
   }
 
-  function init (Uuid, extend, QueryString) {
+  function init (uuid, extend, querystring) {
 
     var defaults = {
       method: 'GET',
@@ -35,14 +35,14 @@
 
       // 序列化数据
       if (s.data && typeof s.data === 'object') {
-        s.data = QueryString.stringify(s.data);
+        s.data = querystring.stringify(s.data);
       }
       s.method = s.method.toUpperCase();
 
       // 拼接查询字符串
       if ((s.method === 'GET' || s.method === 'DELETE')) {
         url += url.indexOf('&') != -1 ? '&' : '?';
-        url += (s.data ? s.data + '&' : '') + 't=' + Uuid.uuid();
+        url += (s.data ? s.data + '&' : '') + 't=' + uuid.uuid();
       }
 
       // 连接服务器

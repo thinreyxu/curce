@@ -1,7 +1,7 @@
 requirejs.config({
   baseUrl: '../../src/'
 });
-require(['Url'], function (Url) {
+require(['url'], function (url) {
   var taOrigin = document.getElementById('taOrigin'),
       taResult = document.getElementById('taResult'),
       btnConvert = document.getElementById('btnConvert');
@@ -12,7 +12,7 @@ require(['Url'], function (Url) {
         resUrls = [];
     
     for (var i = 0; i < oriUrls.length; i++) {
-      resUrls.push(Url.abs(oriUrls[i]));
+      resUrls.push(url.abs(oriUrls[i]));
     }
 
     taResult.value = resUrls.join('\n');

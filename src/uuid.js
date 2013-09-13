@@ -4,7 +4,7 @@
   }
   else {
     _exports = _exports.curce || (_exports.curce = {});
-    _exports.Uuid = init();
+    _exports.uuid = init();
   }
 
   function init () {

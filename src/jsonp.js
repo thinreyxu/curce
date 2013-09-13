@@ -1,13 +1,13 @@
 (function (_exports) {
   if (window.define) {
-    define(['Uuid', 'extend', 'QueryString'], init);
+    define(['uuid', 'extend', 'querystring'], init);
   }
   else {
     _exports = _exports.curce || (_exports.curce = {});
-    _exports.jsonp = init(_exports.Uuid, _exports.extend, _exports.QueryString);
+    _exports.jsonp = init(_exports.uuid, _exports.extend, _exports.querystring);
   }
 
-  function init (Uuid, extend, QueryString) {
+  function init (uuid, extend, querystring) {
     var defaults, requestPool, jsonpcbs;
 
     defaults = {
@@ -86,9 +86,9 @@
       s = extend({}, defaults, options);  // 深度拷贝对象并存入s中
 
       // 寄存回调到window上以备调用
-      cbname = 'cb' + Uuid.uuid();
+      cbname = 'cb' + uuid.uuid();
       while (window[cbname]) {
-        cbname = 'cb' + Uuid.uuid();
+        cbname = 'cb' + uuid.uuid();
       }
       window[cbname] = function (data) {
         aborted = true;
@@ -100,7 +100,7 @@
 
       // 拼接url
       url += url.indexOf('?') !== -1 ? '&' : '?';
-      url = requestURL = url + (s.data ? QueryString.stringify(s.data) : '');
+      url = requestURL = url + (s.data ? querystring.stringify(s.data) : '');
       url += '&' + s.cbname + '=' + cbname;
 
       // 创建
