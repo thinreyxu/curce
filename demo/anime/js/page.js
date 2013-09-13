@@ -1,4 +1,7 @@
-window.onload = function () {
+requirejs.config({
+  baseUrl: '../../src/'
+});
+require(['anime'], function (anime) {
   var easingSel = document.getElementById('select_easing'),
       durationSel = document.getElementById('select_duration'),
       redrawBtn = document.getElementById('btn_redraw');
@@ -8,7 +11,7 @@ window.onload = function () {
       width = canvas.width,
       height = canvas.height;
   var x = 100, y = 100;
-  var tween = Anime({
+  var tween = anime({
         begin: {x: 0, y: 0},
         end: {x: width - 2 * x, y: height - 2 * y},
         delay: 1000
@@ -75,17 +78,16 @@ window.onload = function () {
     }
 
     // 画文字
-    gd.fillStyle = '#333';
-    gd.font = '14px serif';
+    gd.font = 'normal 14px monospace';
+    gd.fillStyle = '#428bca';
     gd.fillText(easing + ' ' + duration + 'ms', 20, 40);
-
+    // return;
     // 动画
     tween.stop()
       .easing({y: easing})
       .duration(duration)
       .off()
       .onStart(function (current) {
-        // console.clear();
         console.log('start');
         lastPoint = {x: current.x, y: current.y};
       })
@@ -100,7 +102,7 @@ window.onload = function () {
         gd.stroke();
 
         gd.beginPath();
-        gd.strokeStyle = '#0d9';
+        gd.strokeStyle = '#428bca';
         gd.lineWidth = '2';
         gd.moveTo(lastPoint.x + x + 0.5, height - lastPoint.y - y + 0.5);
         gd.lineTo(current.x + x + 0.5, height - current.y - y + 0.5);
@@ -114,4 +116,4 @@ window.onload = function () {
       })
       .start();
   }
-};
+});

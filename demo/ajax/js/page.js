@@ -1,10 +1,10 @@
 requirejs.config({
   baseUrl: '../../src',
 });
-require(['require', 'ajax', 'Url'],
-  function (require, ajax, Url) {
+require(['require', 'ajax', 'url'],
+  function (require, ajax, url) {
     var exampleUrl = '../../src/ajax.js',
-        absUrl = Url.abs(exampleUrl);
+        absUrl = url.abs(exampleUrl);
 
     var loadUrl = document.getElementById('loadUrl'),
         result = document.getElementById('code');
@@ -36,12 +36,12 @@ require(['require', 'ajax', 'Url'],
 
 
     function start () {
-      var url = Url.abs(inputUrl.value || exampleUrl),
+      var absUrl = url.abs(inputUrl.value || exampleUrl),
           timeout = parseInt(inputTimeout.value) || 0;
 
       result.innerHTML = '[loading]';
       xhr = ajax({
-        url: url,
+        url: absUrl,
         method: 'GET',
         data: {
           id: 'curce'

@@ -4,7 +4,7 @@
   }
   else {
     _exports = _exports.curce || (_exports.curce = {});
-    _exports.Url = init();
+    _exports.url = init();
   }
 
   function init () {

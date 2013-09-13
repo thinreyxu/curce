@@ -1,14 +1,25 @@
 body {
-  font-size: 10px;
+  font-family: Helvetica, Arial,'Microsoft Yahei','Wenquanyi Micro Hei','Hiragino Sans GB', STXihei,SimSun,sans-serif;
+}
+.container {
+  width: 832px;
+}
+label {
+  line-height: 30px;
+  margin: 0;
+}
+select.form-control {
+  width: 150px;
 }
 #container {
   position: relative;
+  margin-top: 20px;
 }
 #box {
   width: 6px;
   height: 6px;
   margin: -3px;
-  background: red;
+  background: #d9534f;
   border-radius: 50%;
   position: absolute;
 }

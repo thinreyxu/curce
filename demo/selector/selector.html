@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Selector Test</title>
+  <link rel="stylesheet" href="http://getbootstrap.com/dist/css/bootstrap.css">
+</head>
+<body>
+  <div class="container">
+    <div class="page-header">
+      <h1>Selector Demo</h1>
+    </div>
+    <pre id="code">
+    </pre>
+    <div class="page-header">
+      <h4>Query Result</h4>
+    </div>
+    <div id="div1">
+      <ol start="2">
+        <li>1111</li>
+        <li>2222</li>
+        <li>3333</li>
+        <li>4444</li>
+        <li>5555</li>
+      </ol>
+    </div>
+
+    <div class="div2">
+      <p>
+        <input type="text" class="form-control" value="name">
+        <input type="text" maxlength="3" class="form-control" placeholder="placeholder">
+      </p>
+      <input type="text" class="form-control" maxlength="3">
+      <input type="radio" id="radio1"><label class="radio1"> radio text </label>
+      <input id="checkbox1" type="checkbox"><label for="checkbox1">checkbox</label>
+      <p>
+        <input type="file" class="form-control">
+      </p>
+      <input type="button" class="btn btn-primary" value="button">
+    </div>
+  </div>
+  <script data-main='js/page.js' src="http://requirejs.org/docs/release/2.1.8/minified/require.js"></script>
+</body>
+</html>
