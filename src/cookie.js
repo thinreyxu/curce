@@ -12,7 +12,6 @@
       var cookie = encodeURIComponent(name) + '=' + encodeURIComponent(value);
       // 浏览器存储使用的GMT时间,JS的toGMTString()已经废弃，使用toUTCString()代替
       if (expires !== undefined) {
-        console.log(name, value, expires, path, domain, secure);
         switch (expires.constructor) {
           case Date:
             expires = expires.toUTCString();
