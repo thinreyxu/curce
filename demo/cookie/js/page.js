@@ -8,6 +8,7 @@ require(['cookie'], function (cookie) {
     , sampleCookie = document.getElementById('sampleCookie')
     , sampleCookieList = sampleCookie.children[1]
     , btnAddCookie = document.getElementById('btnAddCookie')
+    , btnRemoveCookie = document.getElementById('btnRemoveCookie')
     , inputName = document.getElementById('inputName')
     , inputValue = document.getElementById('inputValue')
     , inputExpires = document.getElementById('inputExpires')
@@ -21,10 +22,10 @@ require(['cookie'], function (cookie) {
     // 显示当前cookie
     showCookie();
     // 初始化添加cookie的表单
-    initAddCookieForm();
+    initCookieForm();
   }();
 
-  function initAddCookieForm () {
+  function initCookieForm () {
     var date = new Date();
     date.setMonth(date.getMonth() + 1);
     inputExpires.value = date.toLocaleString();
@@ -37,6 +38,7 @@ require(['cookie'], function (cookie) {
     inputDomain.value = location.host;
 
     btnAddCookie.onclick = addCookie;
+    btnRemoveCookie.onclick = removeCookie;
   }
 
   function addCookie (e) {
@@ -48,24 +50,48 @@ require(['cookie'], function (cookie) {
       , domain = inputDomain.value.replace(rTrimspace, '')
       , secure = inputSecure.checked;
 
+    if (checkName() && checkValue()) {
+      if (!isNaN(Number(expires))) {
+        expires = Math.floor(Number(expires));
+      }
+      cookie.setItem(name, value, expires, path, domain, secure);
+    }
+  }
+
+  function removeCookie (e) {
+    var rTrimspace = /^\s+|\s+$/g
+      , name = inputName.value.replace(rTrimspace, '')
+      , path = inputPath.value.replace(rTrimspace, '')
+      , domain = inputDomain.value.replace(rTrimspace, '')
+      , secure = inputSecure.checked;
+
+    if (checkName()) {
+      cookie.removeItem(name, path, domain, secure);
+    }
+  }
+
+  function checkName () {
+    var name = inputName.value.replace(/^\s+|\s+$/g, '');
     if (!name) {
       inputName.parentNode.parentNode.className = 'form-group has-error';
       setTimeout(function () {
         inputName.parentNode.parentNode.className = 'form-group';
       }, 2000);
+      return false;
     }
+    return true;
+  }
+
+  function checkValue() {
+    var value = inputValue.value.replace(/^\s+|\s+$/g, '');
     if (!value) {
       inputValue.parentNode.parentNode.className = 'form-group has-error';
       setTimeout(function () {
         inputValue.parentNode.parentNode.className = 'form-group';
       }, 2000);
+      return false;
     }
-    if (name && value) {
-      try {
-        expires = Number(expires);
-      } catch (err) {}
-      cookie.setItem(name, value, expires, path, domain, secure);
-    }
+    return true;
   }
 
   function showCookie () {
