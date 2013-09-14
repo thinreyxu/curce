@@ -12,6 +12,7 @@
       var cookie = encodeURIComponent(name) + '=' + encodeURIComponent(value);
       // 浏览器存储使用的GMT时间,JS的toGMTString()已经废弃，使用toUTCString()代替
       if (expires !== undefined) {
+        console.log(name, value, expires, path, domain, secure);
         switch (expires.constructor) {
           case Date:
             expires = expires.toUTCString();
@@ -70,25 +71,15 @@
       return result;
     }
 
-    // 在火狐上行不通，因为不能只靠name就使一条cookie失效
-    function clear () {
-      var cookies, index;
-
-      if (document.cookie) {
-        cookies = document.cookie.split('; ');
-        for (var i = 0; i < cookies.length; i++) {
-          index = cookies[i].indexOf('=');
-          setItem(decodeURIComponent(cookies[i].substring(0, index)), '', new Date(0));
-        }
-      }
-    }
+    // 在火狐上行不通，因为不能只靠name就使一条设置了不同于
+    // 当前页面的path和domain，或者设置了secure的cookie失效
+    // function clear () {}
 
     return {
       setItem: setItem,
       removeItem: removeItem,
       getItem: getItem,
-      getItems: getItems,
-      clear: clear
+      getItems: getItems
     };
   }
 })(window);
