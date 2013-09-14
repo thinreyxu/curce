@@ -7,7 +7,6 @@ require(['cookie'], function (cookie) {
     , currentCookieList = currentCookie.children[0]
     , sampleCookie = document.getElementById('sampleCookie')
     , sampleCookieList = sampleCookie.children[1]
-    , btnClearAll = document.getElementById('btnClearAll')
     , btnAddCookie = document.getElementById('btnAddCookie')
     , inputName = document.getElementById('inputName')
     , inputValue = document.getElementById('inputValue')
@@ -21,12 +20,6 @@ require(['cookie'], function (cookie) {
     addSampleCookie();
     // 显示当前cookie
     showCookie();
-    // 点击×删除cookie
-    currentCookie.onclick = deleteCookie;
-    // 点击“Clear all”，清除所有cookie
-    btnClearAll.onclick = function () {
-      cookie.clear();
-    };
     // 初始化添加cookie的表单
     initAddCookieForm();
   }();
@@ -67,31 +60,22 @@ require(['cookie'], function (cookie) {
         inputValue.parentNode.parentNode.className = 'form-group';
       }, 2000);
     }
-
     if (name && value) {
+      try {
+        expires = Number(expires);
+      } catch (err) {}
       cookie.setItem(name, value, expires, path, domain, secure);
-    }
-  }
-
-  function deleteCookie (e) {
-    var target, item, cookieName;
-    e = e || window.event;
-    target = e.target;
-    if (target.className === 'close') {
-      item = target.parentNode;
-      cookieName = item.getAttribute('data-cookieName');
-      cookie.removeItem(cookieName);
     }
   }
 
   function showCookie () {
     var cookies = cookie.getItems();
-    
+
     currentCookieList.innerHTML = '';
     for (var i in cookies) {
       currentCookieList.appendChild(createCookieItem(i, cookies[i]));
     }
-    
+    // console.log(cookies);
     setTimeout(function () {
       showCookie(); 
     }, 500);
@@ -99,9 +83,8 @@ require(['cookie'], function (cookie) {
 
   function createCookieItem (name, value) {
     var item = document.createElement('li');
-    item.innerHTML = '<i class="close">&times;</i>' +
-      '<strong class="text-primary">' + name + '</strong>: ' +
-      '<span class="text-muted">' + value + '</span>';
+    item.innerHTML = '<strong class="text-primary">' + name +
+      '</strong>: <span class="text-muted">' + value + '</span>';
     item.setAttribute('data-cookieName', name);
     item.className = 'list-group-item';
     return item;
@@ -110,8 +93,8 @@ require(['cookie'], function (cookie) {
   function addSampleCookie () {
     var sample = [
       ['name', 'thineryxu', '2013/10/01', '/', location.host],
-      ['sex', 'male', new Date().getTime() + 10000],
-      ['age', '25', new Date().getTime() + 60000],
+      ['sex', 'male', 10],
+      ['age', '25', 60],
       ['toBeRemoved', 'true']
     ];
     for (var i = 0; i < sample.length; i++) {
@@ -125,7 +108,21 @@ require(['cookie'], function (cookie) {
     for (var i = 0; i < 6; i++) {
       cell = document.createElement('td');
       if (i === 2) {
-        cell.innerHTML = data[i] ? new Date(data[i]).toLocaleString() : '<small class="text-muted">session</small>';
+        var date;
+        if (data[i] !== undefined) {
+          switch (data[i].constructor) {
+            case Number:
+              date = new Date(new Date().getTime() + data[i] * 1000);
+              break;
+            case String:
+              date = new Date(data[i]);
+              break;
+            case Date:
+              date = data[i];
+              break;
+          }
+        }
+        cell.innerHTML = data[i] ? date.toLocaleString() : '<small class="text-muted">session</small>';
       }
       else if (i === 3) {
         var pathname = location.pathname
