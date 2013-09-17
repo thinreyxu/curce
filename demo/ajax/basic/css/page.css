@@ -4,3 +4,9 @@ body {
 #inputTimeout {
   width: 60px;
 }
+.container {
+  width: 660px;
+}
+.form-horizontal .form-group {
+  _margin: 0;
+}

@@ -1,10 +1,9 @@
 requirejs.config({
-  baseUrl: '../../src',
+  baseUrl: '../../../src'
 });
 require(['ajax', 'url'],
   function (ajax, url) {
-    var exampleUrl = '../../src/ajax.js',
-        absUrl = url.abs(exampleUrl);
+    var exampleUrl = 'http://localhost:3000/req';
 
     var loadUrl = document.getElementById('loadUrl'),
         result = document.getElementById('code');
@@ -18,33 +17,36 @@ require(['ajax', 'url'],
 
     var xhr;
 
-    inputUrl.value = absUrl;
-    blockEampleUrl.innerHTML += absUrl;
+    inputUrl.value = exampleUrl;
+    blockEampleUrl.innerHTML += exampleUrl;
 
-    form.onsubmit = function () {
-      return false;
-    }
-
-    btnStart.onclick = function () {
+    form.onsubmit = function (e) {
+      e = e || window.event;
+      e.preventDefault && e.preventDefault();
+      e.returnValue = false;
+      
       btnStart.disabled = true;
       start();
     }
 
-    btnAbort.onclick = function () {
-      xhr.abort();
+    btnAbort.onclick = function (e) {
+      xhr && xhr.abort();
     }
 
-
     function start () {
-      var absUrl = url.abs(inputUrl.value || exampleUrl),
-          timeout = parseInt(inputTimeout.value) || 0;
+      var ourl = inputUrl.value || exampleUrl
+        , absUrl = url.abs(inputUrl.value || exampleUrl)
+        , timeout = parseInt(inputTimeout.value) || 0;
 
       result.innerHTML = '[loading]';
       xhr = ajax({
-        url: absUrl,
+        url: ourl,
         method: 'GET',
-        data: {
-          id: 'curce'
+        xhrFields: {
+          withCredentials: true
+        },
+        headers: {
+          'access-time': new Date().toUTCString()
         },
         success: success,
         error: error,
@@ -56,14 +58,17 @@ require(['ajax', 'url'],
 
     function success (res, xhr) {
       btnStart.disabled = false;
-      // console.log(xhr.status);
-      result.innerHTML = res.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      if ('innerText' in result) {
+        result.innerText = res;
+      }
+      else {
+        result.innerHTML = res.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      }
     }
 
     function error (err, xhr) {
       btnStart.disabled = false;
-      result.innerHTML = '[' + err.message.toUpperCase() + ']: ' + xhr.status + ' - ' + xhr.statusText;
-      // console.error(err.message, xhr.status);
+      result.innerHTML = '[' + err.message.toUpperCase() + ']: ' + (xhr.status || 0) + ' - ' + (xhr.statusText || '');
     }
 
   }
