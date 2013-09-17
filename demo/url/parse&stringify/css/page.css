@@ -1,0 +1,28 @@
+#btnParse,
+#btnStringify {
+  position: relative;
+}
+#btnParse {
+  margin-top: 100px;
+}
+#btnStringify {
+  margin-top: 20px;
+}
+#btnParse .glyphicon,
+#btnStringify .glyphicon {
+  position: absolute;
+  top: 7px;
+}
+#btnParse .glyphicon {
+  right: 10px;
+}
+#btnStringify .glyphicon {
+  left: 10px;
+}
+textarea {
+  resize: none;
+}
+.checkbox {
+  font-weight: normal;
+  font-size: 12px;
+}
