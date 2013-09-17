@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>The url.parse() and url.stringify() Demo</title>
+  <link rel="stylesheet" href="http://getbootstrap.com/dist/css/bootstrap.css">
+  <link rel="stylesheet" href="css/page.css">
+</head>
+<body>
+  <div class="container">
+    <div class="page-header">
+      <h1>The url.parse() and url.stringify() Demo</h1>
+    </div>
+    <ul class="text-muted">
+      <li>To parse an url string, input it into the "Url string" textarea, and then click on the "Parse" button.</li>
+      <li>To stringify an url object, input the string representation of the url object (in JSON format) into the "Url object" textarea, and then click on the "Stringify" button.</li>
+    </ul>
+    <div class="row">
+      <div class="col-sm-5">
+        <h3 class="control-label">Url string</h3>
+        <textarea class="form-control" id="taString" cols="30" rows="10"></textarea>
+        <h4>Sample</h4>
+        <pre>http://thinreyxu.github.io:80/curce/demo/url/parse&stringify/parse&stringify.html?id=curce&t=3dne83hf#page1</pre>
+      </div>
+      <div class="col-sm-2">
+        <button id="btnParse" type="button" class="btn btn-md btn-primary btn-block"><i class="glyphicon glyphicon-chevron-right"></i> Parse</button>
+        <label class="checkbox">
+          <input type="checkbox" name="parsequery" id="inputParseQuery"> Parse Query String
+        </label>
+        <hr>
+        <button id="btnStringify" type="button" class="btn btn-md btn-primary btn-block"><i class="glyphicon glyphicon-chevron-left"></i> Stringify</button>
+      </div>
+      <div class="col-sm-5">
+        <h3 class="control-label">Url object</h3>
+        <textarea class="form-control" id="taObject" cols="30" rows="10"></textarea>
+        <h4>Sample</h4>
+        <pre>{
+  "protocol": "http:",
+  "hostname": "thinreyxu.github.io",
+  "port": "80",
+  "pathname": "/curce/demo/url/parse&stringify/parse&stringify.html/",
+  "search": "?id=curce&t=3dne83hf",
+  "hash": "#page1"
+}</pre>
+      </div>
+    </div>
+  </div>
+
+  <script data-main="js/page.js" src="http://requirejs.org/docs/release/2.1.8/minified/require.js"></script>
+</body>
+</html>

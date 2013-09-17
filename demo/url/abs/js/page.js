@@ -1,5 +1,5 @@
 requirejs.config({
-  baseUrl: '../../src/'
+  baseUrl: '../../../src/'
 });
 require(['url'], function (url) {
   var taOrigin = document.getElementById('taOrigin'),
