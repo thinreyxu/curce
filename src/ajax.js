@@ -1,13 +1,13 @@
 (function (_exports) {
   if (window.define) {
-    define(['uuid', 'extend', 'querystring'], init);
+    define(['uuid', 'extend', 'querystring', 'url'], init);
   }
   else {
     _exports = _exports.curce || (_exports.curce = {});
-    _exports.ajax = init(_exports.uuid, _exports.extend, _exports.querystring);
+    _exports.ajax = init(_exports.uuid, _exports.extend, _exports.querystring, _exporsts.url);
   }
 
-  function init (uuid, extend, querystring) {
+  function init (uuid, extend, querystring, ourl) {
 
     var defaults = {
       method: 'GET',
@@ -22,11 +22,46 @@
         , timer = null
         , aborted = false
         , complete = false
-        , xhr = create_xhr();
+        , cors = false
+        , curlocation
+        , reqLocation
+        , xhr;
 
+      // 处理参数url
       if (typeof url === 'object') {
         options = url;
         url = options.url;
+      }
+
+      // 判断跨域请求
+      if (ourl.isAbs(url)) {
+        curLocation = ourl.location();
+        reqLocation = ourl.parse(url);
+        
+        // 填补默认端口
+        for (var i = 0, loc = [curLocation, reqLocation]; i < loc.length; i++) {
+          if (!loc[i].port) {
+            switch (loc[i].protocol) {
+              case 'http:':   loc[i].port = '80'; break;
+              case 'https:':  loc[i].port = '443'; break;
+            }
+          }
+        }
+
+        if (reqLocation.protocol !== curLocation.protocol
+          || reqLocation.hostname !== curLocation.hostname
+          || reqLocation.port !== curLocation.port) {
+          cors = true;
+        }
+      }
+
+      // 创建xhr对象
+      xhr = create_xhr(cors);
+
+      // 无法创建xhr对象，结束ajax()
+      if (xhr === null) {
+        throw new Error('Cannot create XHR object.');
+        return;
       }
 
       // 设置选项
@@ -45,6 +80,13 @@
         url += (s.data ? s.data + '&' : '') + 't=' + uuid.uuid();
       }
 
+      // 设置xhr属性
+      if (s.xhrFields) {
+        for (var i in s.xhrFields) {
+          xhr[i] = s.xhrFields[i];
+        }
+      }
+
       // 连接服务器
       xhr.open(s.method, url, s.async, s.username, s.password);
 
@@ -54,7 +96,7 @@
       }
 
       // 设置请求头
-      if (s.headers) {
+      if (s.headers && xhr.setRequestHeader) {
         for (var i in s.headers) {
           xhr.setRequestHeader(i, s.headers[i]);
         }
@@ -75,27 +117,31 @@
 
       // 结果监听
       if ('onload' in xhr && 'onerror' in xhr) {
-        xhr.onload = done;
-        xhr.onerror = done;
+        xhr.onload = load;
+        xhr.onerror = error;
       }
       else {
         xhr.onreadystatechange = function () {
           if (xhr.readyState === 4) {
-            done();
+            load();
           }
         }
       }
 
       // 完成处理
-      function done () {
+      function load () {
         complete = true;
         timer && clearTimeout(timer);
-        if (xhr.status >=200 && xhr.status < 300 || xhr.status === 304) {
+        if (xhr.status >=200 && xhr.status < 300 || xhr.status === 304
+          || cors && xhr instanceof XDomainRequest) {
           s.success && s.success.call(s.context, xhr.responseText, xhr);
         }
         else {
           s.error && s.error.call(s.context, new Error('error'), xhr);
         }
+      }
+      function error () {
+        s.error && s.error.call(s.context, new Error('error'), xhr);
       }
 
       // 取消处理
@@ -119,35 +165,57 @@
     }
 
     // 创建xhr对象
-    function create_xhr () {
+    function create_xhr (cors) {
       var xhr = {};
       var progIDs = ['MSXML2.XMLHTTP.6.0', 'MSXML2.XMLHTTP.3.0', 'MSXML2.XMLHTTP', 'Microsoft.XMLHTTP'];
       if (window.XMLHttpRequest) {
-        xhr = new XMLHttpRequest();
-        create_xhr = function () {
-          return new XMLHttpRequest();
-        }
+        create_xhr = function (cors) {
+          return !cors ? new XMLHttpRequest() :
+            (typeof create_coxhr === 'function' ? create_coxhr() : null);
+        };
       }
       else if (window.ActiveXObject) {
         var i = 0;
         while (progIDs[i]) {
           try {
-            xhr = new ActiveXObject(progIDs[i]);
-            create_xhr = function () {
-              return new ActiveXObject(progIDs[i]);
-            }
+            new ActiveXObject(progIDs[i]);
+            create_xhr = function (cors) {
+              return !cors ? new ActiveXObject(progIDs[i]) :
+                (typeof create_coxhr === 'function' ? create_coxhr() : null);
+            };
             break;
           }
           catch (ex) { i++; }
         }
       }
       else {
-        xhr = null;
-        create_xhr = function () {
+        create_xhr = function (cors) {
           return null;
-        }
+        };
       }
-      return xhr;
+      
+      return create_xhr(cors);
+    }
+
+    // 创建支持跨域的xhr对象
+    function create_coxhr () {
+      if (window.XMLHttpRequest && 'withCredentials' in new XMLHttpRequest()) {
+        create_coxhr = function () {
+          return new XMLHttpRequest();
+        };
+      }
+      else if (window.XDomainRequest) {
+        create_coxhr = function () {
+          return new XDomainRequest();
+        };
+      }
+      else {
+        create_coxhr = function () {
+          return null;
+        };
+      }
+
+      return create_coxhr();
     }
 
     return ajax;

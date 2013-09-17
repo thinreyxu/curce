@@ -47,6 +47,7 @@
           index = cookies[i].indexOf('=');
           if (decodeURIComponent(cookies[i].substring(0, index)) === name) {
             value = decodeURIComponent(cookies[i].substring(index + 1));
+            break;
           }
         }
       }
