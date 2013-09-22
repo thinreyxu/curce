@@ -9,8 +9,9 @@
 
   function init () {
     var arrayProto = Array.prototype
-      , oldArrayProtoMethods = ["join", "pop", "push", "concat", "reverse", "shift", "unshift", "slice", "splice", "sort"]
-      , newArrayProtoMethods = ["filter", "forEach", "forEachRight", "some", "every", "map", "indexOf", "lastIndexOf", "reduce"]
+      , oldArrayProtoMethods = ['join', 'pop', 'push', 'concat', 'reverse', 'shift', 'unshift', 'slice', 'splice', 'sort']
+      , newArrayProtoMethods = ['filter', 'forEach', 'some', 'every', 'map', 'indexOf', 'lastIndexOf', 'reduce', 'reduceRight']
+      , omMethods = ['concat', 'push', 'slice', 'filter', 'map', 'compact']
       , call = Function.prototype.call;
 
     function NeoArray (arr) {
@@ -165,16 +166,24 @@
         }
       }
       return initValue;
-    }
+    };
    
     NeoArray.compact = function compact (arr, hole) {
+      var newArr = [];
       for (var i = 0; i < arr.length; i++) {
-        if (i in arr === false || hole && NeoArray.indexOf(hole, arr[i]) !== -1) {
-          arr.splice(i--, 1);
+        if (i in arr && (!hole || NeoArray.indexOf(hole, arr[i]) === -1)) {
+          newArr.push(arr[i]);
         }
       }
+      return newArr;
     };
 
+    NeoArray.prototype.value = function () {
+      return this._wrapped;
+    };
+    NeoArray.prototype.result = function () {
+      return this._result || this._wrapped;
+    };
     NeoArray.prototype.valueOf = function () {
       return this._wrapped.valueOf();
     };
@@ -188,18 +197,38 @@
         if (NeoArray.hasOwnProperty(method) && typeof NeoArray[method] === 'function') {
           if (method in arrayProto) {
             NeoArray.prototype[method] = function () {
-              return arrayProto[method].apply(this._wrapped, arguments); 
+              var result = arrayProto[method].apply(this._wrapped, arguments)
+                , ret = new NeoArray(this._wrapped);
+              ret._result = result;
+              return ret;
             };
           }
           else {
             NeoArray.prototype[method] = function () {
-              return NeoArray[method].apply(this._wrapped, [this._wrapped].concat(arguments));
+              var result = NeoArray[method].apply(this._wrapped, [this._wrapped].concat(arrayProto.slice.call(arguments)))
+                , ret = new NeoArray(this._wrapped);
+              ret._result = result;
+              return ret;
             };
           }
         }
       }(method);
     }
-
+    for (var i = 0; i < omMethods.length; i++) {
+      !function () {
+        var method = omMethods[i];
+        if (method in arrayProto) {
+          NeoArray.prototype[method + '_'] = function () {
+            return new NeoArray(arrayProto[method].apply(this._wrapped, arguments));
+          }
+        }
+        else {
+          NeoArray.prototype[method + '_'] = function () {
+            return new NeoArray(NeoArray[method].apply(this._wrapped, [this._wrapped].concat(arrayProto.slice.call(arguments))));
+          }
+        }
+      }();
+    }
     // 处理旧 Array 方法
     for (var i = 0; i < oldArrayProtoMethods.length; i++) {
       !function () {
@@ -208,7 +237,10 @@
           return call.apply(arrayProto[method], arguments);
         };
         NeoArray.prototype[method] = function () {
-          return arrayProto[method].apply(this._wrapped, arguments);
+          var result = arrayProto[method].apply(this._wrapped, arguments)
+            , ret = new NeoArray(this._wrapped);
+          ret._result = result;
+          return ret;
         };
       }(i);
     }
