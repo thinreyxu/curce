@@ -57,16 +57,6 @@
         }
       };
     }
-    if (!arrayProto.forEachRight) {
-      NeoArray.forEachRight = function forEachRight (arr, callback, context) {
-        context = (context === undefined ? null : context);
-        for (var i = arr.length - 1; i >= 0; i--) {
-          if (i in arr) {
-            callback.call(context, arr[i], i, arr);
-          }
-        }
-      };
-    }
     if (!arrayProto.some) {
       NeoArray.some = function some (arr, callback, context) {
         context = (context === undefined ? null : context);
@@ -155,19 +145,30 @@
       };
     }
 
-    NeoArray.reduceRight = function reduceRight (arr, callback, initValue) {
-      var len = arr.length, i = len - 1;
-      if (2 in arguments === false) {
-        initValue = arr[i--];
-      }
-      for (; i >= 0; i--) {
+    if (!arrayProto.reduce) {
+      NeoArray.reduceRight = function reduceRight (arr, callback, initValue) {
+        var len = arr.length, i = len - 1;
+        if (2 in arguments === false) {
+          initValue = arr[i--];
+        }
+        for (; i >= 0; i--) {
+          if (i in arr) {
+            initValue = callback.call(null, initValue, arr[i], i, arr);
+          }
+        }
+        return initValue;
+      };
+    }
+
+    NeoArray.forEachRight = function forEachRight (arr, callback, context) {
+      context = (context === undefined ? null : context);
+      for (var i = arr.length - 1; i >= 0; i--) {
         if (i in arr) {
-          initValue = callback.call(initValue, arr[i], i, arr);
+          callback.call(context, arr[i], i, arr);
         }
       }
-      return initValue;
     };
-   
+
     NeoArray.compact = function compact (arr, hole) {
       var newArr = [];
       for (var i = 0; i < arr.length; i++) {

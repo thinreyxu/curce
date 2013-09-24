@@ -10,7 +10,9 @@ require(['require', 'array', 'console'], function (array) {
   var tests = [
     'tests/filter',
     'tests/map',
-    'tests/compact'
+    'tests/compact',
+    'tests/reduce',
+    'tests/reduceRight'
   ];
   require(tests);
 });
