@@ -1,7 +1,8 @@
 require.config({
   map: {
     '*': {
-      'array': '../../src/array.js'
+      'array': '../../src/array.js',
+      'console': '../lib/console.js'
     }
   }
 });
@@ -16,7 +17,9 @@ require(['require', 'array', 'console'], function (require, array) {
     'tests/forEach',
     'tests/forEachRight',
     'tests/indexOf',
-    'tests/lastIndexOf'
+    'tests/lastIndexOf',
+    'tests/some',
+    'tests/every'
   ];
   require(tests);
 });

@@ -201,7 +201,6 @@
               var result = arrayProto[method].apply(this._wrapped, arguments)
                 , ret = new NeoArray(this._wrapped);
               ret._result = result;
-              console.log('the result of indexOf:', ret._result);
               return ret;
             };
           }
