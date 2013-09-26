@@ -183,7 +183,7 @@
       return this._wrapped;
     };
     NeoArray.prototype.result = function () {
-      return this._result || this._wrapped;
+      return this._result !== undefined ? this._result : this._wrapped;
     };
     NeoArray.prototype.valueOf = function () {
       return this._wrapped.valueOf();
@@ -201,6 +201,7 @@
               var result = arrayProto[method].apply(this._wrapped, arguments)
                 , ret = new NeoArray(this._wrapped);
               ret._result = result;
+              console.log('the result of indexOf:', ret._result);
               return ret;
             };
           }

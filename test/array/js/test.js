@@ -6,13 +6,17 @@ require.config({
   }
 });
 
-require(['require', 'array', 'console'], function (array) {
+require(['require', 'array', 'console'], function (require, array) {
   var tests = [
     'tests/filter',
     'tests/map',
     'tests/compact',
     'tests/reduce',
-    'tests/reduceRight'
+    'tests/reduceRight',
+    'tests/forEach',
+    'tests/forEachRight',
+    'tests/indexOf',
+    'tests/lastIndexOf'
   ];
   require(tests);
 });
