@@ -158,18 +158,15 @@
     // Filters related 
     var filters = {
       'ID': function (el, token) {
-
         return el.id === token.name;
       },
       'CLASS': function (el, token) {
-
         return new RegExp('(^|\s)' + token.name + '(\s|^)').test(el.className);
       },
       'TAG': function (el, token) {
         return token.name.toLowerCase() === el.tagName.toLowerCase();
       },
       'UNIVERSAL': function (el, token) {
-
         return true;
       },
       'ATTRIBUTE': function (el, token) {
@@ -374,7 +371,7 @@
       }
     };
 
-    function contains(parent, child, equal) {
+    function contains (parent, child, equal) {
       equal = equal || false;
 
       if (equal && parent === child) {
@@ -514,7 +511,6 @@
       return result;
     }
 
-
     // 从一组 selector 中匹配所有 simple selector，并返回一组 token
     // @param   {selectors}：选择器字符串
     // @return  {tokenGroup}：处理后的 token
@@ -634,6 +630,7 @@
 
       return found;
     }
+
     return query;
   }
 })(window);
