@@ -12,8 +12,8 @@
   function init (query, dom) {
 
     /*
-      register event listener
-      ---------------------------
+      支持事件代理的注册监听器方法
+      -------------------------
       supporting event delegation
     */
     function on (el, type, selector, handler, data) {
@@ -22,6 +22,16 @@
         handler = selector;
         selector = undefined;
       }
+      var newHandler = makeHandler(el, type, selector, handler, data);
+      addEventListener(el, newHandler.type, newHandler.listener);
+    }
+
+    function makeHandler (el, type, selector, handler, data) {
+      var innerHandler = type in handlerFactories ? 
+        handlerFactories[type](handler) :
+        handlerFactories['default'](handler);
+      type = innerHandler.type || type;
+
       if (selector) {
         var listener = function (ev) {
           ev = getEventObject(ev, el);
@@ -29,8 +39,8 @@
           for (var i = targets.length - 1; i >= 0; i--) {
             if (dom.contains(targets[i], ev.target, true)) {
               ev.delegateTarget = targets[i];
-              var ret = handler.call(targets[i], ev, data);
-              ret === false && ev.preventDefault();
+              ev.currentTarget = el;
+              innerHandler(targets[i], ev, data);
             }
           };
         };
@@ -39,8 +49,8 @@
       else {
         var listener = function (ev) {
           ev = getEventObject(ev, el);
-          var ret = hander.call(el, ev);
-          ret === false && ev.preventDefault();
+          ev.currentTarget = el;
+          innerHandler(el, ev, data);
         };
       }
       listener.el = el;
@@ -48,12 +58,46 @@
       listener.handler = handler;
       listener.data = data;
       listeners.push(listener);
-      addEventListener(el, type, listener);
+      return {
+        type: type,
+        listener: listener
+      };
+    }
+
+    var handlerFactories = {};
+
+    handlerFactories.default = function (handler) {
+      return function (context, ev, data) {
+        var ret = handler.call(context, ev, data);
+        ret === false && ev.preventDefault();
+      };
+    }
+
+    handlerFactories.mouseenter = function (handler) {
+      function listener (context, ev, data) {
+        if (!dom.contains(ev.currentTarget, ev.relatedTarget, true)) {   
+          var ret = handler.call(context, ev, data);
+          ret === false && ev.preventDefault();
+        }
+      }
+      listener.type = 'mouseover';
+      return listener;
+    }
+
+    handlerFactories.mouseleave = function (handler) {
+      function listener (context, ev, data) {
+        if (!dom.contains(ev.currentTarget, ev.relatedTarget, true)) {   
+          var ret = handler.call(context, ev, data);
+          ret === false && ev.preventDefault();
+        }
+      }
+      listener.type = 'mouseout';
+      return listener;
     }
 
     /*
-      remove event listener
-      ----------------------
+      支持事件代理的移除监听器方法
+      -------------------------
       event.off(el)  直接解除
       event.off(el, type)  直接解除
       event.off(el, type, selector)  获取 handler 后解除
@@ -79,8 +123,9 @@
     }
 
     /*
-      emit event
+      触发事件
       ----------
+      触发的事件的冒泡行为，需要加入此功能
     */
     function emit (el, type, selector, data) {
       eachListener(el, type, selector, handler,
@@ -108,6 +153,7 @@
       );
     }
 
+    // 遍历监听器数组
     function eachListener (el, type, selector, handler, callback) {
       for (var i = 0, len = listeners.length; i < len; i++) {
         var l = listeners[i];
@@ -121,12 +167,13 @@
       }
     }
 
+    // 兼容的获取事件对象的方法
+    // 还有待在使用过程中对此方法进行修补
     function getEventObject (ev) {
       if (!ev) {
         ev = window.event;
         ev.relatedTarget = ev.toElement || ev.fromElement;
         ev.target = ev.srcElement;
-        ev.currentTarget = el;
         ev.preventDefault = function () {
           e.returnValue = false;
         };
@@ -137,6 +184,7 @@
       return ev;
     }
 
+    // 兼容的注册事件监听器方法
     function addEventListener (el, type, handler) {
       if (window.addEventListener) {
         addEventListener = function (el, type, handler) {
@@ -151,6 +199,7 @@
       return addEventListener(el, type, handler);
     }
 
+    // 兼容的移除事件监听器方法
     function removeEventListener (el, type, handler) {
       if (window.removeEventListener) {
         removeEventListener = function (el, type, handler) {

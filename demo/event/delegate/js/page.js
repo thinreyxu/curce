@@ -1,5 +1,5 @@
 require.config({
-  baseUrl: '../../src/'
+  baseUrl: '../../../src/'
 });
 
 require(['selector', 'event'], function (query, event) {
