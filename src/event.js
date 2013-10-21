@@ -64,37 +64,6 @@
       };
     }
 
-    var handlerFactories = {};
-
-    handlerFactories.default = function (handler) {
-      return function (context, ev, data) {
-        var ret = handler.call(context, ev, data);
-        ret === false && ev.preventDefault();
-      };
-    }
-
-    handlerFactories.mouseenter = function (handler) {
-      function listener (context, ev, data) {
-        if (!dom.contains(ev.currentTarget, ev.relatedTarget, true)) {   
-          var ret = handler.call(context, ev, data);
-          ret === false && ev.preventDefault();
-        }
-      }
-      listener.type = 'mouseover';
-      return listener;
-    }
-
-    handlerFactories.mouseleave = function (handler) {
-      function listener (context, ev, data) {
-        if (!dom.contains(ev.currentTarget, ev.relatedTarget, true)) {   
-          var ret = handler.call(context, ev, data);
-          ret === false && ev.preventDefault();
-        }
-      }
-      listener.type = 'mouseout';
-      return listener;
-    }
-
     /*
       支持事件代理的移除监听器方法
       -------------------------
@@ -214,6 +183,38 @@
       return removeEventListener(el, type, handler);
     }
 
+    // 需要经过特殊处理的事件，例如：
+    // mouseenter 需要判断相关元素是不是绑定事件的元素的子元素
+    var handlerFactories = {};
+
+    handlerFactories.default = function (handler) {
+      return function (context, ev, data) {
+        var ret = handler.call(context, ev, data);
+        ret === false && ev.preventDefault();
+      };
+    }
+
+    handlerFactories.mouseenter = function (handler) {
+      function listener (context, ev, data) {
+        if (!dom.contains(ev.delegateTarget || ev.currentTarget, ev.relatedTarget, true)) {   
+          var ret = handler.call(context, ev, data);
+          ret === false && ev.preventDefault();
+        }
+      }
+      listener.type = 'mouseover';
+      return listener;
+    }
+
+    handlerFactories.mouseleave = function (handler) {
+      function listener (context, ev, data) {
+        if (!dom.contains(ev.delegateTarget || ev.currentTarget, ev.relatedTarget, true)) {   
+          var ret = handler.call(context, ev, data);
+          ret === false && ev.preventDefault();
+        }
+      }
+      listener.type = 'mouseout';
+      return listener;
+    }
     return {
       on: on,
       off: off,
