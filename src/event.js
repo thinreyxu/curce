@@ -98,12 +98,12 @@
     /*
       支持事件代理的移除监听器方法
       -------------------------
-      event.off(el)  直接解除
-      event.off(el, type)  直接解除
-      event.off(el, type, selector)  获取 handler 后解除
-      event.off(el, type, selector, hander)  获取 handler 后解除
-      event.off(el, handler)  获取 handler 后解除
-      event.off(el, type, handler)  获取 handler 后解除
+      event.off(el)
+      event.off(el, type)
+      event.off(el, type, selector)
+      event.off(el, type, selector, hander)
+      event.off(el, handler)
+      event.off(el, type, handler)
     */
     function off (el, type, selector, handler) {
       if (typeof selector === 'function') {
