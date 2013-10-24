@@ -28,6 +28,5 @@ require(['event'], function (event) {
   function log (msg) {
     con.innerHTML += '<div><time>' + new Date().toLocaleString() + '</time>  ' + msg + '</div>';
     con.scrollTop = con.scrollHeight - con.clientHeight;
-    console.log(con.scrollTop === con.scrollHeight - con.clientHeight);
   }
 });
