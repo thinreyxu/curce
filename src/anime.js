@@ -93,7 +93,7 @@
       // 指数/对数
       expoIn: function (r) {
         if (r === 0) {
-          return b;
+          return 0;
         }
         else {
           return Math.pow(1024, r - 1);
@@ -101,7 +101,7 @@
       },
       expoOut: function (r) {
         if (r === 1) {
-          return e;
+          return 1;
         }
         else {
           return (1 - Math.pow(1024, -r));
@@ -109,10 +109,10 @@
       },
       expoInOut: function (r) {
         if (r === 0) {
-          return b;
+          return 0;
         }
         else if (r === 1) {
-          return e;
+          return 1;
         }
         
         if (r <= 0.5) {
@@ -140,7 +140,7 @@
       // 弹性
       elasticIn: function (r) {
         if (r === 0) {
-          return b;
+          return 0;
         }
         else {
           return Math.pow(1024, r - 1) * Math.sin(9 / 2 * Math.PI * r);
@@ -148,7 +148,7 @@
       },
       elasticOut: function (r) {
         if (r === 1) {
-          return e;
+          return 1;
         }
         else {
           return (1 - Math.pow(1024, -r) * Math.cos(9 / 2 * Math.PI * r));
@@ -156,10 +156,10 @@
       },
       elasticInOut: function (r) {
         if (r === 0) {
-          return b;
+          return 0;
         }
         if (r === 1) {
-          return e;
+          return 1;
         }
         if (r < 0.5) {
           return Math.pow(1024, r * 2 - 1) * Math.sin(9 * Math.PI * r) / 2;
@@ -202,7 +202,7 @@
         var t4 = 0.02817603275;
 
         if (r === 1) {
-          return e;
+          return 1;
         }
         if (r <= 2 * t4) {
           return 5 * (Math.pow(t4, 2) - Math.pow(r - t4, 2));
@@ -224,7 +224,7 @@
         var t4 = 0.02817603275;
 
         if (r === 1) {
-          return e;
+          return 1;
         }
         if (r <= t1) {
           return 5 * r * r;
