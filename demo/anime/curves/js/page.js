@@ -1,5 +1,5 @@
 requirejs.config({
-  baseUrl: '../../src/'
+  baseUrl: '../../../src/'
 });
 require(['anime'], function (anime) {
   var easingSel = document.getElementById('select_easing'),
@@ -11,11 +11,8 @@ require(['anime'], function (anime) {
       width = canvas.width,
       height = canvas.height;
   var x = 100, y = 100;
-  var tween = anime({
-        begin: {x: 0, y: 0},
-        end: {x: width - 2 * x, y: height - 2 * y},
-        delay: 1000
-      });
+  var tween = anime({ x: 0, y: 0 }, { delay: 1000 })
+        .to({ x: width - 2 * x, y: height - 2 * y });
 
   draw(canvas, easing, duration);
 
@@ -87,31 +84,31 @@ require(['anime'], function (anime) {
       .easing({y: easing})
       .duration(duration)
       .off()
-      .onStart(function (current) {
+      .onStart(function (props, current, length) {
         console.log('start');
-        lastPoint = {x: current.x, y: current.y};
+        lastPoint = {x: props.x, y: props.y};
       })
-      .onUpdate(function (current) {
-        console.log('update:', this._current);
+      .onUpdate(function (props, current, length) {
+        console.log('update:', props);
 
         gd.beginPath();
         gd.strokeStyle = '#f2f2f2';
         gd.lineWidth = '1';
-        gd.moveTo(current.x + x + 0.5, height - y + 0.5);
-        gd.lineTo(current.x + x + 0.5, height - current.y - y + 0.5);
+        gd.moveTo(props.x + x + 0.5, height - y + 0.5);
+        gd.lineTo(props.x + x + 0.5, height - props.y - y + 0.5);
         gd.stroke();
 
         gd.beginPath();
         gd.strokeStyle = '#428bca';
         gd.lineWidth = '2';
         gd.moveTo(lastPoint.x + x + 0.5, height - lastPoint.y - y + 0.5);
-        gd.lineTo(current.x + x + 0.5, height - current.y - y + 0.5);
+        gd.lineTo(props.x + x + 0.5, height - props.y - y + 0.5);
         gd.stroke();
-        lastPoint = {x: current.x, y: current.y};
+        lastPoint = {x: props.x, y: props.y};
 
-        box.style.top = height - current.y - y + 'px';
+        box.style.top = height - props.y - y + 'px';
       })
-      .onComplete(function (current) {
+      .onComplete(function (props) {
         console.log('end');
       })
       .start();

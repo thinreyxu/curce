@@ -1,0 +1,11 @@
+body {
+  font-family: Helvetica, Arial,'Microsoft Yahei','Wenquanyi Micro Hei','Hiragino Sans GB', STXihei,SimSun,sans-serif;
+}
+.box {
+  width: 200px;
+  height: 200px;
+  position: absolute;
+  left: 0;
+  top: 0;
+  background: blue;
+}
