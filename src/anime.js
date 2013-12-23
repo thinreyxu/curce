@@ -15,7 +15,7 @@
     // easing functions
     // s: start time, d: duration, t: current time, 
     // b: begin value, e: end value, r: ratio
-    var _easingFuncs = {
+    var EASING_FUNCS = {
       // 一次
       linear: function (r) {
         return r;
@@ -270,12 +270,11 @@
           return (5 * Math.pow(2 * r - 1 - t1 - 2 * t2 - 2 * t3 - t4, 2)/2 - 5 * Math.pow(t4, 2)/2 + 1);
         }
       }
-    }
+    };
 
-    function _calcProgress (easing, s, d, t, b, e) {
-      var r = (t - s) / d,
-          fn = _easingFuncs[easing];
-      return fn(r) * (e - b) + b;
+    function _calcProgress (ef, s, d, t, b, e) {
+      var r = (t - s) / d;
+      return ef(r) * (e - b) + b;
     }
 
     function _startAnime () {
@@ -325,23 +324,30 @@
 
     // 动画对象
     // param: o, options
-    function Anime (o) {
+    function Anime (obj, options) {
 
       if (this instanceof Anime === false) {
-        return new Anime(o);
+        return new Anime(obj, options);
       }
 
-      o = o || {};
+      var o = options || {};
 
       this._queued = false;
 
-      this._begin = o.begin;
-      this._end = o.end;
+      this._from = obj || {};
+      this._oriFrom = {};
+      this._to = [];
+      
+      // 保存一份原始的数据
+      for (var prop in this._from) {
+        this._oriFrom[prop] = this._from[prop];
+      }
+
       this._duration = o.duration || 1000;
       this._easing = o.easing || {};
       this._delay = o.delay || 0;
       this._started = false;
-      this._current = {};
+      this._current = 0;
 
       this._events = {
         start: [],
@@ -349,9 +355,9 @@
         update: []
       };
 
-      o.onStart && this._events.start.push(o.onStart);
-      o.onComplete && this._events.complete.push(o.onComplete);
-      o.onUpdate && this._events.updata.push(o.onUpdate);
+      if (o.onStart) this._events.start.push(o.onStart);
+      if (o.onComplete) this._events.complete.push(o.onComplete);
+      if (o.onUpdate) this._events.updata.push(o.onUpdate);
     }
 
     // 更新动画
@@ -363,77 +369,100 @@
       }
 
       if (this._started === false) {
-        _trigger.call(this, 'start');
-        _trigger.call(this, 'update');
         this._started = true;
+        _trigger.call(this, 'start', this._from);
+        _trigger.call(this, 'update', this._from, this._current, this._to.length);
       }
 
-      if (elapse >= this._duration) {
-        for (var item in this._current) {
-          this._current[item] = this._end[item];
+      if (elapse >= this._end.duration) {
+        // 设置属性
+        for (var item in this._end.to) {
+          this._from[item] = this._end.to[item];
         }
-        _trigger.call(this, 'update');
-        this.stop();
-        _trigger.call(this, 'complete');
+
+        _trigger.call(this, 'update', this._from, this._current, this._to.length);
+        _trigger.call(this, 'progress', this._from, this._current, this._to.length);
+
+        // 阶段性结束
+        if (this._current < this._to.length - 1) {
+          _setNextAnimePhase.call(this, ++this._current);
+        }
+        // 全部结束
+        else if (this._current === this._to.length - 1) {
+          this.stop();
+          _trigger.call(this, 'complete', this._from, this._current, this._to.length);
+        }
       }
       else {
-        for (var item in this._current) {
-          this._current[item] = _calcProgress(this._easing[item], this._startTime, this._duration, time, this._begin[item], this._end[item]);
+        for (var item in this._end.to) {
+          this._from[item] = _calcProgress(this._end.easing[item], this._startTime, this._end.duration, time, this._start[item], this._end.to[item]);
         }
-        _trigger.call(this, 'update');
+        _trigger.call(this, 'update', this._from, this._current, this._to.length);
       }
       return this;
     };
 
     // 开始动画
     Anime.prototype.start = function () {
-      if (this._begin !== undefined && this._end !== undefined) {
-        this._startTime = _now() + this._delay;
 
-        for (var item in this._begin) {
-          this._current[item] = this._begin[item];
-        }
-
-        if (typeof this._easing === 'object') {
-          for (var item in this._begin) {
-            this._easing[item] = this._easing[item] || 'linear';
-          }
-        }
-        else if (typeof this._easing === 'string') {
-          var easing = this._easing;
-          this._easing = {};
-          for (var item in this._begin) {
-            this._easing[item] = easing;
-          }
-        }
-
-        _addAnime(this);
+      // 如果没有结束点，不执行动画
+      if (!this._to || this._to.length === 0) {
+        return;
       }
+
+      // 处理缓动属性, 将缓动属性指向特定的欢动函数
+      var et = typeof this._easing;
+      if (et === 'string') {
+        this._def = EASING_FUNCS[this._easing];
+      }
+      else if (et === 'function') {
+        this._def = this._easing;
+      }
+      else {
+        this._def = EASING_FUNCS.linear;
+      }
+
+      if (et === 'object') {
+        for (var item in this._easing) {
+          var easing = this._easing[item];
+          this._easing[item] = typeof easing === 'function' ? easing : EASING_FUNCS[easing] || this._def;
+        }
+      }
+      else {
+        this._easing = {};
+      }
+
+      // 使用保存的原始数据填充 this._from
+      for (var prop in this._from) {
+        delete this._from[prop];
+      }
+      for (var prop in this._oriFrom) {
+        this._from[prop] = this._oriFrom[prop];
+      }
+
+      // 确定开始时间
+      _setNextAnimePhase.call(this, this._current = 0);
+
+      _addAnime(this);
+
       return this;
     };
 
     // 停止动画
     Anime.prototype.stop = function () {
       this._started = false;
+      delete this._start;
+      delete this._end;
+      delete this._current;
       _removeAnime(this);
       return this;
     };
 
-    Anime.prototype.begin = function (begin) {
-      this._begin = this._begin || {};
-      for (var item in begin) {
-        this._begin[item] = begin[item];
-      }
+    Anime.prototype.to = function (to, duration, easing, delay) {
+      var stop = { to: to, duration: duration, easing: easing, delay: delay };
+      this._to.push(stop);
       return this;
     };
-
-    Anime.prototype.end = function (end) {
-      this._end = this._end || {};
-      for (var item in end) {
-        this._end[item] = end[item];
-      }
-      return this;
-    }
 
     Anime.prototype.delay = function (delay) {
       if (this._started === false) {
@@ -521,15 +550,74 @@
     };
 
     function _trigger (eventType) {
+      var data = Array.prototype.slice.call(arguments, 1);
       if (this._events[eventType] && this._events[eventType].length) {
         for (var i = 0; i < this._events[eventType].length; i++) {
-          this._events[eventType][i].call(this, this._current);
+          this._events[eventType][i].apply(this, data);
         }
       }
       if (typeof this['on' + eventType] === 'function') {
-        this['on' + eventType].call(this, this._current);
+        this['on' + eventType].apply(this, data);
       }
-    };
+    }
+
+    function _setNextAnimePhase (current) {
+      var lastEnd = this._end,
+          stop = this._to[current],
+          to = stop.to;
+
+      // 设置结束点属性
+      this._end = {};
+      this._end.to = {};
+      for (var prop in to) {
+        this._end.to[prop] = stop.to[prop];
+        if (this._from[prop] === 'undefined') {
+          this._from[prop] = 0;
+        }
+      }
+
+      // 设置开始点属性
+      this._start = {};
+      for (var prop in this._end.to) {
+        this._start[prop] = this._from[prop];
+      }
+
+
+      // 处理每个 stop 的 easing 属性
+      var easing = stop.easing,
+          type = typeof easing;
+
+      this._end.easing = {}
+
+      if (type === 'object') {
+        for (var prop in to) {
+          if (to.hasOwnProperty(prop)) {
+            var easing2 = easing[prop];
+            this._end.easing[prop] = typeof easing2 === 'function' ? easing2
+              : EASING_FUNCS[easing2] || this._easing[prop] || this._def;
+          }
+        }
+      }
+      else if (type === 'string' || type === 'function' || type === 'undefined') {
+        for (var prop in to) {
+          this._end.easing[prop] = type === 'function' ? easing
+            : EASING_FUNCS[easing] || this._easing[prop] || this._def;
+        }
+      }
+
+      // 处理每个 stop 的 duration 和 delay
+      this._end.duration = stop.duration || this._duration;
+      this._end.delay = stop.delay || 0;
+
+      // 设置开始时间
+      this._startTime = _now() + this._end.delay;
+
+      console.group('current');
+      console.log(this._start);
+      console.log(this._end);
+      console.log(this._startTime)
+      console.groupEnd();
+    }
 
     return Anime;
   }
