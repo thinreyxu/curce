@@ -12,7 +12,7 @@
     _exports.inherit = init();
   }
 
-  function init (extend) {
+  function init () {
     
     function inherit (SuperClass, constructor, instanceMethods, classMethods) {
       
