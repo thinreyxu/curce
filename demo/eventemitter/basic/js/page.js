@@ -1,5 +1,5 @@
 require.config({
-  baseUrl: '../../src/'
+  baseUrl: '../../../src/'
 });
 
 require(['eventemitter'], function (EventEmitter) {
@@ -26,7 +26,7 @@ require(['eventemitter'], function (EventEmitter) {
 
 
   function onConnection (ev) {
-    console.group('connection');
+    console.group('connection %s', ev.data.id);
       console.log('Context', this);
       console.log('Type', ev.type);
       console.log('Data', ev.data);
@@ -34,7 +34,7 @@ require(['eventemitter'], function (EventEmitter) {
   }
 
   function onClose (ev) {
-    console.group('close');
+    console.group('close %s', ev.data.id);
       console.log('Context', this);
       console.log('Type', ev.type);
       console.log('Data', ev.data);
@@ -42,7 +42,7 @@ require(['eventemitter'], function (EventEmitter) {
   }
 
   function onData (ev) {
-    console.group('data');
+    console.group('data %s', ev.data.id);
       console.log('Context', this);
       console.log('Type', ev.type);
       console.log('Data', ev.data);
