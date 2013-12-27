@@ -272,9 +272,27 @@
       }
     };
 
-    function _calcProgress (ef, s, d, t, b, e) {
+    function _calcProgress (easingFn, s, d, t, b, e) {
       var r = (t - s) / d;
-      return ef(r) * (e - b) + b;
+      return easingFn(r) * (e - b) + b;
+    }
+
+
+    var INTERPOLATION_FUNCS = {
+      'linear': function (r, series) {
+        var i = r * (series.length - 1), index = Math.floor(i), time = i - index;
+        return {
+          index: index,
+          time: time
+        };
+      }
+    };
+
+    function _calcInterpolation (interpolatioinFn, s, d, t, b, e) {
+      var series = [b].concat(e),
+          r = (t - s) / d,
+          ip = interpolatioinFn(r, series);
+      return  { s: 0, d: 1, t: ip.time, b: series[ip.index], e: series[ip.index + 1] };
     }
 
     function _startAnime () {
@@ -324,17 +342,17 @@
 
     // 动画对象
     // param: o, options
-    function Anime (obj, options) {
+    function Anime (o, op) {
 
       if (this instanceof Anime === false) {
-        return new Anime(obj, options);
+        return new Anime(o, op);
       }
 
-      var o = options || {};
+      op = op || {};
 
       this._queued = false;
 
-      this._from = obj || {};
+      this._from = o || {};
       this._oriFrom = {};
       this._to = [];
       
@@ -343,9 +361,12 @@
         this._oriFrom[prop] = this._from[prop];
       }
 
-      this._duration = o.duration || 1000;
-      this._easing = o.easing || {};
-      this._delay = o.delay || 0;
+      this._duration = op.duration || 1000;
+      this._easing = op.easing || {};
+      this._delay = op.delay || 0;
+      this._interpolation = typeof op.interpolation === 'function' ?
+        op.interpolation : INTERPOLATION_FUNCS.linear;
+
       this._started = false;
       this._current = 0;
 
@@ -377,7 +398,8 @@
       if (elapse >= this._end.duration) {
         // 设置属性
         for (var item in this._end.to) {
-          this._from[item] = this._end.to[item];
+          var end = this._end.to[item];
+          this._from[item] = end.length ? end[end.length - 1] : end;
         }
 
         _trigger.call(this, 'update', this._from, this._current, this._to.length);
@@ -395,7 +417,15 @@
       }
       else {
         for (var item in this._end.to) {
-          this._from[item] = _calcProgress(this._end.easing[item], this._startTime, this._end.duration, time, this._start[item], this._end.to[item]);
+          var end = this._end.to[item];
+          if (end instanceof Array) {
+            var interpolationFn = this._interpolation;
+            var ip = _calcInterpolation(interpolationFn, this._startTime, this._end.duration, time, this._start[item], end);
+            this._from[item] = _calcProgress(this._end.easing[item], ip.s, ip.d, ip.t, ip.b, ip.e);
+          }
+          else {
+            this._from[item] = _calcProgress(this._end.easing[item], this._startTime, this._end.duration, time, this._start[item], this._end.to[item]);
+          }
         }
         _trigger.call(this, 'update', this._from, this._current, this._to.length);
       }
@@ -561,6 +591,17 @@
       }
     }
 
+    function _checkValueType (value) {
+      var type = typeof value;
+      if (type === 'string' ||
+        type === 'number' ||
+        type === 'object' && value instanceof Array)
+      {
+        return true;
+      }
+      return false;
+    }
+
     function _setNextAnimePhase (current) {
       var lastEnd = this._end,
           stop = this._to[current],
@@ -570,9 +611,11 @@
       this._end = {};
       this._end.to = {};
       for (var prop in to) {
-        this._end.to[prop] = stop.to[prop];
-        if (this._from[prop] === 'undefined') {
-          this._from[prop] = 0;
+        if (_checkValueType(to[prop])) {
+          this._end.to[prop] = stop.to[prop];
+          if (this._from[prop] === 'undefined') {
+            this._from[prop] = 0;
+          }
         }
       }
 
@@ -607,16 +650,10 @@
 
       // 处理每个 stop 的 duration 和 delay
       this._end.duration = stop.duration || this._duration;
-      this._end.delay = stop.delay || 0;
+      this._end.delay = stop.delay || current === 0 ? this._delay : 0;
 
       // 设置开始时间
       this._startTime = _now() + this._end.delay;
-
-      console.group('current');
-      console.log(this._start);
-      console.log(this._end);
-      console.log(this._startTime)
-      console.groupEnd();
     }
 
     return Anime;
