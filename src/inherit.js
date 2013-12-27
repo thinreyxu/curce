@@ -64,7 +64,7 @@
         }
         // 处理非重载方法
         else {
-          SubClass.prototype[item] = method;
+          SubClass.prototype[name] = method;
         }
       }
 
