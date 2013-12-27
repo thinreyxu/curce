@@ -24,11 +24,16 @@ require(['inherit'], function (inherit) {
     console.log('My job is %s.', this.job);
   };
 
+  Worker.prototype.quit = function () {
+    console.log('I quit my job (%s).', this.job);
+  };
+
   Worker = inherit(Person, Worker, Worker.prototype);
 
   var worker = new Worker('thinreyxu', 26, 'f2e');
 
   worker.say();
+  worker.quit();
   console.log('worker instanceof Person:', worker instanceof Person);
   console.log(worker);
 });
