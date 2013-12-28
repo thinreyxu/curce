@@ -580,7 +580,7 @@
 
       // 处理每个 stop 的 duration 和 delay
       this._end.duration = stop.duration || this._duration;
-      this._end.delay = stop.delay || current === 0 ? this._delay : 0;
+      this._end.delay = stop.delay || (current === 0 ? this._delay : 0);
 
       // 设置开始时间
       this._startTime = _now() + this._end.delay;
