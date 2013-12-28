@@ -8,7 +8,8 @@ require(['anime'], function (anime) {
         .to({y: 300}, 600, 'backOut', 2000)
         .to({x: 0}, 1200, 'quintIn', 3000)
         .to({y: 0}, 1800, 'elasticOut', 4000)
-        .onUpdate(function (props) {
+        .onUpdate(function (ev) {
+          var props = ev.data.props;
           box.style.left = props.x + 'px';
           box.style.top = props.y + 'px';
         })

@@ -2,13 +2,13 @@ require.config({
   baseUrl: '../../../src/'
 });
 
-require(['eventemitter', 'inherit'], function (EventEmitter, inherit) {
+require(['eventemitter', 'mixin'], function (EventEmitter, mixin) {
 
   var Container = (function () {
 
-    function Container () {
-      this.super();
-    }
+    var em = EventEmitter.create();
+
+    function Container () { }
 
     Container.prototype.add = function (child) {
       this.emit('add', { child: child });
@@ -18,12 +18,12 @@ require(['eventemitter', 'inherit'], function (EventEmitter, inherit) {
       this.emit('remove', { child: child });
     };
 
-    Container = inherit(EventEmitter, Container, Container.prototype);
-
+    mixin(Container.prototype, em);
     EventEmitter.extend(Container.prototype, ['add', 'remove']);
-
+    
     return Container;
   })();
+
 
   var container = new Container();
 
@@ -38,10 +38,10 @@ require(['eventemitter', 'inherit'], function (EventEmitter, inherit) {
 
 
   function onChildAdd (ev) {
-    console.log('Child added: %o', ev.data);
+    console.log('Child added: %o', ev.data.child);
   }
 
   function onChildRemove (ev) {
-    console.log('Child removed: %o', ev.data);
+    console.log('Child removed: %o', ev.data.child);
   }
 });
