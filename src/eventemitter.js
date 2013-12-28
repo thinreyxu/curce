@@ -9,94 +9,124 @@
 
   function init (extend) {
 
-    var Defaults = {
+    var defaults = {
       enabled: true
     };
 
-    function EventEmitter () { }
+    function EventEmitter () {
+      this.listeners = {};
+    }
 
-    EventEmitter.create = function (op) {
+    EventEmitter.prototype.on = function (type, callback, data, context) {
+      return on.call(this, this.listeners, type, callback, data, context);
+    };
 
-      var op = extend({}, Defaults, op);
+    EventEmitter.prototype.off = function (type, callback) {
+      return off.call(this, this.listeners, type, callback);
+    };
+
+    EventEmitter.prototype.emit = function (type, data, context) {
+      return emit.call(this, this.listeners, type, data, context);
+    };
+
+    EventEmitter.create = function () {
       var listeners = {};
       
-      function on (type, callback, data, context) {
-        if (op.enabled) {
-          listeners[type] = listeners[type] || [];
-          listeners[type].push({
-            callback: callback,
-            data: data || null,
-            context: context || null
-          });
-        }
+      var ret = {};
+      ret.on = function (type, callback, data, context) {
+        return on.call(this, listeners, type, callback, data, context);
+      };
+      ret.off = function (type, callback) {
+        return off.call(this, listeners, type, callback);
+      };
+      ret.emit = function (type, data, context) {
+        return emit.call(this, listeners, type, data, context);
+      };
 
-        return this;
+      return ret;
+    };
+
+    EventEmitter.extend = function (o, events) {
+
+      if (typeof evetns === 'string') {
+        events = [events];
       }
+      for (var i = 0; i < events.length; i++) {
+        (function (type) {
+          var capped = type.charAt(0).toUpperCase() + type.substring(1);
+          o['on' + capped] = function (callback, data, context) {
 
-      function off (type, callback) {
-        if (op.enabled) {
-          if (typeof type === 'undefined') {
-            listeners = {};
+            return this.on.call(this, type, callback, data, context);
+          };
+        })(events[i]);
+      }
+    };
+
+    function on (listeners, type, callback, data, context) {
+      listeners[type] = listeners[type] || [];
+      listeners[type].push({
+        callback: callback,
+        data: data || null,
+        context: context || null
+      });
+
+      return this;
+    }
+
+    function off (listeners, type, callback) {
+      if (typeof type === 'undefined') {
+        for (var item in listeners) {
+          if (listeners.hasOwnProperty(item)) {
+            delete listeners[item];
           }
-          else if (typeof type === 'function') {
-            callback = type;
-            type = undefined;
-            for (var item in listeners) {
-              var callbacks = listeners[item];
-              for (var i = 0; i < callbacks.length; i++) {
-                if (callbacks[i].callback === callback) {
-                  callbacks.splice(i--, 1);
-                }
-              }
+        }
+      }
+      else if (typeof type === 'function') {
+        callback = type;
+        type = undefined;
+        for (var item in listeners) {
+          var callbacks = listeners[item];
+          for (var i = 0; i < callbacks.length; i++) {
+            if (callbacks[i].callback === callback) {
+              callbacks.splice(i--, 1);
             }
           }
-          else if (typeof type === 'string' && typeof callback === 'undefined' && type in listeners) {
-            delete listeners[type];
-          }
-          else if (typeof type === 'string' && typeof callback === 'function') {
-            var callbacks = listeners[type];
-            if (callbacks) {
-              for (var i = 0; i < callbacks.length; i++) {
-                if (callbacks[i].callback === callback) {
-                  callbacks.splice(i--, 1);
-                }
-              }
-            }
-          }
         }
-
-        return this;
       }
-
-      function emit (type, data, context) {
-
+      else if (typeof type === 'string' && typeof callback === 'undefined' && type in listeners) {
+        delete listeners[type];
+      }
+      else if (typeof type === 'string' && typeof callback === 'function') {
         var callbacks = listeners[type];
         if (callbacks) {
           for (var i = 0; i < callbacks.length; i++) {
-            var listener = callbacks[i];
-            var cb = listener.callback,
-                ct = context !== undefined? context : listener.context,
-                dt = extend({}, listener.data, data);
-            var ev = {
-              type: type,
-              data: dt
-            };
-            cb.call(ct, ev);
+            if (callbacks[i].callback === callback) {
+              callbacks.splice(i--, 1);
+            }
           }
         }
       }
 
-      function enable (enabled) {
-        op.enabled = enabled !== undefined ? enabled : true;
-      }
+      return this;
+    }
 
-      return {
-        on: on,
-        off: off,
-        emit: emit,
-        enable: enable
-      };
-    };
+    function emit (listeners, type, data, context) {
+
+      var callbacks = listeners[type];
+      if (callbacks) {
+        for (var i = 0; i < callbacks.length; i++) {
+          var listener = callbacks[i];
+          var cb = listener.callback,
+              ct = context !== undefined? context : listener.context,
+              dt = extend({}, listener.data, data);
+          var ev = {
+            type: type,
+            data: dt
+          };
+          cb.call(ct, ev);
+        }
+      }
+    }
 
     return EventEmitter;
   }

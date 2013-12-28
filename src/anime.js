@@ -1,13 +1,13 @@
 (function (_exports) {
   if (window.define) {
-    define(init);
+    define(['mixin', 'eventemitter'], init);
   }
   else {
     _exports = _exports.curce || (_exports.curce = {});
-    _exports.anime = init();
+    _exports.anime = init(_exports.mixin, _exports.EventEmitter);
   }
 
-  function init () {
+  function init (mixin, EventEmitter) {
     var _animes = [];
     var _animeStarted = false;
     var _animeId;
@@ -349,11 +349,7 @@
       this._started = false;
       this._current = 0;
 
-      this._events = {
-        start: [],
-        complete: [],
-        update: []
-      };
+      this.listeners = {};
 
       if (o.onStart) this._events.start.push(o.onStart);
       if (o.onComplete) this._events.complete.push(o.onComplete);
@@ -368,10 +364,16 @@
         return this;
       }
 
+      var data = {
+        props: this._from,
+        current: this._current,
+        phases: this._to.length
+      };
+
       if (this._started === false) {
         this._started = true;
-        _trigger.call(this, 'start', this._from);
-        _trigger.call(this, 'update', this._from, this._current, this._to.length);
+        this.emit('start', data);
+        this.emit('update', data);
       }
 
       if (elapse >= this._end.duration) {
@@ -380,8 +382,8 @@
           this._from[item] = this._end.to[item];
         }
 
-        _trigger.call(this, 'update', this._from, this._current, this._to.length);
-        _trigger.call(this, 'progress', this._from, this._current, this._to.length);
+        this.emit('update', data);
+        this.emit('progress', data);
 
         // 阶段性结束
         if (this._current < this._to.length - 1) {
@@ -390,14 +392,14 @@
         // 全部结束
         else if (this._current === this._to.length - 1) {
           this.stop();
-          _trigger.call(this, 'complete', this._from, this._current, this._to.length);
+          this.emit('complete', data);
         }
       }
       else {
         for (var item in this._end.to) {
           this._from[item] = _calcProgress(this._end.easing[item], this._startTime, this._end.duration, time, this._start[item], this._end.to[item]);
         }
-        _trigger.call(this, 'update', this._from, this._current, this._to.length);
+        this.emit('update', data);
       }
       return this;
     };
@@ -485,81 +487,9 @@
       return this;
     };
 
-    Anime.prototype.onStart = function (fn) {
-      if (this._started === false) {
-        this._events.start.push(fn);
-      }
-      return this;
-    };
-
-    Anime.prototype.onUpdate = function (fn) {
-      if (this._started === false) {
-        this._events.update.push(fn);
-      }
-      return this;
-    };
-
-    Anime.prototype.onComplete = function (fn) {
-      if (this._started === false) {
-        this._events.complete.push(fn);
-      }
-      return this;
-    };
-
-    Anime.prototype.on = function (eventType, fn) {
-      if (this._started === false) {
-        this._events[eventType] = this._events[eventType] || [];
-        this._events[eventType].push(fn);
-      }
-      return this;
-    };
-
-    Anime.prototype.off = function (eventType, fn) {
-      if (this._started === false) {
-        if (typeof eventType === 'undefined') {
-          for (var type in this._events) {
-            this._events[type] = [];
-          }
-        }
-        else if (typeof eventType === 'string' && this._events[eventType] && this._events[eventType].length != 0) {
-          if (fn) {
-            for (var i = 0; i < this._events.length; i++) {
-              if (this._events[eventType][i] === fn) {
-                this._events[eventType].splice(i, 1);
-                i--;
-              }
-            }
-          }
-          else {
-            this._events[eventType] = [];
-          }
-        }
-        else if (typeof eventType === 'function') {
-          fn = eventType;
-          for (var type in this._events) {
-            for (var i = 0; i < this._events[type].length; i++) {
-              if (this._events[type][i] === fn) {
-                this._events[type].splice(i, 1);
-                i--;
-              }
-            }
-          }
-        }
-      }
-      return this;
-    };
-
-    function _trigger (eventType) {
-      var data = Array.prototype.slice.call(arguments, 1);
-      if (this._events[eventType] && this._events[eventType].length) {
-        for (var i = 0; i < this._events[eventType].length; i++) {
-          this._events[eventType][i].apply(this, data);
-        }
-      }
-      if (typeof this['on' + eventType] === 'function') {
-        this['on' + eventType].apply(this, data);
-      }
-    }
+    // 添加事件支持
+    mixin(Anime.prototype, EventEmitter.prototype);
+    EventEmitter.extend(Anime.prototype, ['start', 'update', 'complete']);
 
     function _setNextAnimePhase (current) {
       var lastEnd = this._end,
