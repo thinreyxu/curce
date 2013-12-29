@@ -84,13 +84,13 @@ require(['anime'], function (anime) {
       .easing({y: easing})
       .duration(duration)
       .off()
-      .onStart(function (ev) {
-        var props = ev.data.props;
+      .onStart(function (ev, data) {
+        var props = data.props;
         console.log('start');
         lastPoint = {x: props.x, y: props.y};
       })
-      .onUpdate(function (ev) {
-        var props = ev.data.props;
+      .onUpdate(function (ev, data) {
+        var props = data.props;
         console.log('update:', props);
         gd.beginPath();
         gd.strokeStyle = '#f2f2f2';
@@ -109,7 +109,7 @@ require(['anime'], function (anime) {
 
         box.style.top = height - props.y - y + 'px';
       })
-      .onComplete(function (ev) {
+      .onComplete(function (ev, data) {
         console.log('end');
       })
       .start();

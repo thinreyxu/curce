@@ -25,8 +25,9 @@
       return off.call(this, this.listeners, type, callback);
     };
 
-    EventEmitter.prototype.emit = function (type, data, context) {
-      return emit.call(this, this.listeners, type, data, context);
+    EventEmitter.prototype.emit = function (type) {
+      var data = Array.prototype.slice.call(arguments, 1);
+      return emit.apply(this, [this.listeners, type].concat(data));
     };
 
     EventEmitter.create = function () {
@@ -39,8 +40,9 @@
       ret.off = function (type, callback) {
         return off.call(this, listeners, type, callback);
       };
-      ret.emit = function (type, data, context) {
-        return emit.call(this, listeners, type, data, context);
+      ret.emit = function (type) {
+        var data = Array.prototype.slice.call(arguments, 1);
+        return emit.apply(this, [listeners, type].concat(data));
       };
 
       return ret;
@@ -110,20 +112,17 @@
       return this;
     }
 
-    function emit (listeners, type, data, context) {
-
+    function emit (listeners, type) {
+      var data = Array.prototype.slice.call(arguments, 2);
       var callbacks = listeners[type];
       if (callbacks) {
         for (var i = 0; i < callbacks.length; i++) {
           var listener = callbacks[i];
-          var cb = listener.callback,
-              ct = context !== undefined? context : listener.context,
-              dt = extend({}, listener.data, data);
-          var ev = {
-            type: type,
-            data: dt
-          };
-          cb.call(ct, ev);
+          var ev = { type: type };
+          if (listener.data) {
+            ev.data = listener.data;
+          }
+          listener.callback.apply(listener.context || null, [ev].concat(data));
         }
       }
     }

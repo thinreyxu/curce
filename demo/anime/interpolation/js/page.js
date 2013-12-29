@@ -22,7 +22,7 @@ require(['anime'], function (anime) {
 
   var duration = 1000;
 
-  var o = { x: center.x + rh, y: center.y, last: { x: center.x + rh, y: center.y} },
+  var o = { x: center.x + rh, y: center.y },
       stop = { x: [center.x, center.x - rh],
               y: [center.y - rv, center.y] };
 
@@ -30,53 +30,65 @@ require(['anime'], function (anime) {
         .to(stop)
         .easing({ x: 'circInOut', y: 'linear' })
         .duration(duration * 2)
+        .memo(true)
         .onStart(onStart)
         .onUpdate(onUpdate);
 
-  var tween2 = anime({ x: center.x + rh, y: center.y, last: { x: center.x + rh, y: center.y} })
+  var tween2 = anime({ x: center.x + rh, y: center.y })
         .to({x: center.x, y: center.y - rv}, duration, { x: 'circIn' })
         .to({x: center.x - rh, y: center.y}, duration, { x: 'circOut' })
         .to({x: center.x, y: center.y + rv}, duration, { x: 'circIn' })
         .to({x: center.x + rh, y: center.y}, duration, { x: 'circOut' })
+        .memo(true)
         .onStart(onStart)
         .onUpdate(onUpdate);
 
   var r = 0, toAngle = -360 * 5;
-  var tween3 = anime({ angle: 0, last: { angle: 0 } })
+  var tween3 = anime({ angle: 0 })
         .to({ angle: toAngle })
         .duration(duration)
         .delay(duration * 4)
-        .onUpdate(function (props) {
+        .memo(['angle'])
+        .onUpdate(function (ev, data) {
+
+          var props = data.props,
+              last = data.last[0];
+
+              console.log('tween3:', last);
+
           gd.save();
 
           gd.lineWidth = (toAngle - props.angle) / toAngle * 5 + 1;
 
           gd.beginPath();
-          gd.arc(center.x - rh / 2, center.y, r+= 0.5, d2a(props.last.angle), d2a(props.angle), true);
+          gd.arc(center.x - rh / 2, center.y, r+= 0.5, d2a(last.angle), d2a(props.angle), true);
           gd.stroke();
           
           gd.beginPath();
-          gd.arc(center.x + rh / 2, center.y, r+= 0.5, d2a(-props.last.angle + 180), d2a(-props.angle + 180), false);
+          gd.arc(center.x + rh / 2, center.y, r+= 0.5, d2a(-last.angle + 180), d2a(-props.angle + 180), false);
           gd.stroke();
           
-          props.last.angle = props.angle;
+          last.angle = props.angle;
 
           gd.restore();
         });
 
   var a = 30;
-  var tween4 = anime({ angle: a, last: { angle: a } })
+  var tween4 = anime({ angle: a })
         .to({ angle: -a })
         .duration(duration)
         .delay(duration * 5)
-        .onUpdate(function (props) {
+        .memo(['angle'])
+        .onUpdate(function (ev, data) {
+          var props = data.props,
+              last = data.last[0];
           gd.save();
 
           gd.beginPath();
           gd.lineWidth = (a - Math.abs(props.angle)) / a * 5 + 2;
-          gd.arc(center.x, center.y + rv * 1 / 4, 80, d2a(props.last.angle + 90), d2a(props.angle + 90), true);
+          gd.arc(center.x, center.y + rv * 1 / 4, 80, d2a(last.angle + 90), d2a(props.angle + 90), true);
           gd.stroke();
-          props.last.angle = props.angle;
+          last.angle = props.angle;
           
           gd.restore();
         });
@@ -86,20 +98,21 @@ require(['anime'], function (anime) {
   tween3.start();
   tween4.start();
 
-  function onStart (props) {
+  function onStart () {
     gd.strokeStyle = '#666';
   }
 
-  function onUpdate (props) {
-    if (props.last.x !== props.x || props.last.y !== props.y) {
+  function onUpdate (ev, data) {
+    var props = data.props,
+        last = data.last[0];
+
+    if (last.x !== props.x || last.y !== props.y) {
       gd.save();
       gd.beginPath();
       gd.lineWidth = (center.y + rv - props.y) / (rv * 2) * 3 + 2;
-      gd.moveTo(props.last.x, props.last.y);
+      gd.moveTo(last.x, last.y);
       gd.lineTo(props.x, props.y);
       gd.stroke();
-      props.last.x = props.x;
-      props.last.y = props.y;
       gd.restore();
     }
   }

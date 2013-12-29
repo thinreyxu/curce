@@ -8,10 +8,361 @@
   }
 
   function init (mixin, EventEmitter) {
-    var _animes = [];
-    var _animeStarted = false;
-    var _animeId;
-    
+    var animes = [];
+    var animeStarted = false;
+    var animeId;
+
+    function startAnime () {
+      if (animeStarted === false) {
+        animeStarted = true;
+        updateAnime();
+      }
+    }
+
+    function stopAnime () {
+      if (animes.length > 0) {
+        animes.splice(0, animes.length);
+      }
+      animeStarted = false;
+      cancelAnimationFrame(animeId);
+    }
+
+    function updateAnime () {
+      animeId = requestAnimationFrame(updateAnime);
+      // console.log('updateAnime: _animateStarted = true');
+      for (var i = 0; i < animes.length; i++) {
+        animes[i].update(now());
+      }
+    }
+
+    function addAnime (anime) {
+      if (!anime._queued) {
+        anime._queued = true;
+        animes.push(anime);
+        if (animes.length !== 0) {
+          startAnime();
+        }
+      }
+    }
+
+    function removeAnime (anime) {
+      for (var i = 0; i < animes.length; i++) {
+        if (animes[i] === anime) {
+          animes[i]._queued = false;
+          animes.splice(i, 1);
+          if (animes.length === 0) {
+            stopAnime();
+          }
+        }
+      }
+    }
+
+    // 动画对象
+    // param: o, options
+    function Anime (o, op) {
+
+      if (this instanceof Anime === false) {
+        return new Anime(o, op);
+      }
+
+      op = op || {};
+
+      this._queued = false;
+
+      this._from = o || {};
+      this._oriFrom = {};
+      this._to = [];
+      
+      // 保存一份原始的数据
+      for (var prop in this._from) {
+        this._oriFrom[prop] = this._from[prop];
+      }
+
+      this._duration = op.duration || 1000;
+      this._easing = op.easing || {};
+      this._delay = op.delay || 0;
+      this._interpolation = typeof op.interpolation === 'function' ?
+        op.interpolation : INTERPOLATION_FUNCS.linear;
+      this._memo = op.memo || false;
+      this._memoDepth = op.memoDepth || 1;
+
+      this._started = false;
+      this._current = 0;
+
+      // 混入 EventEmitter 时，需要实现的属性
+      this.listeners = {};
+    }
+
+    // 更新动画
+    Anime.prototype.update = function (time) {
+      var elapse = time - this._startTime;
+
+      if (elapse < 0) {
+        return this;
+      }
+
+      var data = {
+        props: this._from,
+        current: this._current,
+        phases: this._to.length
+      };
+      if (this._memo !== false) {
+        data.last = this._last;
+      }
+
+      if (this._started === false) {
+        this._started = true;
+        this.emit('start', data);
+        this.emit('update', data);
+      }
+
+      // 阶段性结束 或 全部结束
+      if (elapse >= this._end.duration) {
+        // 设置属性
+        for (var item in this._end.to) {
+          var end = this._end.to[item];
+          this._from[item] = end.length ? end[end.length - 1] : end;
+        }
+
+        this.emit('update', data);
+        this.emit('progress', data);
+
+        // 阶段性结束
+        if (this._current < this._to.length - 1) {
+          setNextAnimePhase.call(this, ++this._current);
+        }
+        // 全部结束
+        else if (this._current === this._to.length - 1) {
+          this.stop();
+          this.emit('complete', data);
+        }
+      }
+      // 动画幀
+      else {
+        for (var item in this._end.to) {
+          var end = this._end.to[item];
+          if (end instanceof Array) {
+            var interpolationFn = this._interpolation;
+            var ip = calcInterpolation(interpolationFn, this._startTime, this._end.duration, time, this._start[item], end);
+            this._from[item] = calcProgress(this._end.easing[item], ip.s, ip.d, ip.t, ip.b, ip.e);
+          }
+          else {
+            this._from[item] = calcProgress(this._end.easing[item], this._startTime, this._end.duration, time, this._start[item], this._end.to[item]);
+          }
+        }
+        this.emit('update', data);
+      }
+
+      // 设置动画值缓存
+      setMemoCache.call(this);
+
+      return this;
+    };
+
+    // 开始动画
+    Anime.prototype.start = function () {
+
+      // 如果没有结束点，不执行动画
+      if (!this._to || this._to.length === 0) {
+        return;
+      }
+
+      // 处理缓动属性, 将缓动属性指向特定的欢动函数
+      var et = typeof this._easing;
+      if (et === 'string') {
+        this._def = EASING_FUNCS[this._easing];
+      }
+      else if (et === 'function') {
+        this._def = this._easing;
+      }
+      else {
+        this._def = EASING_FUNCS.linear;
+      }
+
+      if (et === 'object') {
+        for (var item in this._easing) {
+          var easing = this._easing[item];
+          this._easing[item] = typeof easing === 'function' ? easing : EASING_FUNCS[easing] || this._def;
+        }
+      }
+      else {
+        this._easing = {};
+      }
+
+      // 使用保存的原始数据填充 this._from
+      // for (var prop in this._from) {
+      //   delete this._from[prop];
+      // }
+      for (var prop in this._oriFrom) {
+        this._from[prop] = this._oriFrom[prop];
+      }
+
+      if (this._memo !== false) {
+        this._last = [];
+        setMemoCache.call(this);
+      }
+
+      // 确定开始时间及动画的开始结束点数据
+      setNextAnimePhase.call(this, this._current = 0);
+
+      addAnime(this);
+
+      return this;
+    };
+
+    // 停止动画
+    Anime.prototype.stop = function () {
+      this._started = false;
+      delete this._start;
+      delete this._end;
+      delete this._current;
+      removeAnime(this);
+      return this;
+    };
+
+    Anime.prototype.to = function (to, duration, easing, delay) {
+      var stop = { to: to, duration: duration, easing: easing, delay: delay };
+      this._to.push(stop);
+      return this;
+    };
+
+    // property set functions
+    var props = {
+      'delay': ['delay', 0],
+      'easing': ['easing', 'linear'],
+      'duration': ['duration', 1000],
+      'memo': ['memo', false, 'memoDepth', 1]
+    };
+
+    for (var name in props) {
+      (function (name, prop) {
+        Anime.prototype[name] = function () {
+          if (this._started === false) {
+            for (var i = 0; i < prop.length; i += 2) {
+              this['_' + prop[i]] = arguments[i] !== undefined ? arguments[i] : prop[i + 1];
+            }
+          }
+          return this;
+        };
+      })(name, props[name]);
+    }
+
+    // 添加事件支持
+    mixin(Anime.prototype, EventEmitter.prototype);
+    EventEmitter.extend(Anime.prototype, ['start', 'update', 'complete']);
+
+
+    /**
+     * 检查值的类型，字符串、数字和数组返回真，其余返回假
+     */
+    function checkValueType (value) {
+      var type = typeof value;
+      if (type === 'string' ||
+        type === 'number' ||
+        type === 'object' && value instanceof Array)
+      {
+        return true;
+      }
+      return false;
+    }
+
+    /**
+     * 设置下一动画阶段的开始，结束值，以及开始的时间
+     */
+    function setNextAnimePhase (current) {
+      var lastEnd = this._end,
+          stop = this._to[current],
+          to = stop.to;
+
+      // 设置结束点属性
+      this._end = {};
+      this._end.to = {};
+      for (var prop in to) {
+        if (checkValueType(to[prop])) {
+          this._end.to[prop] = stop.to[prop];
+          if (this._from[prop] === 'undefined') {
+            this._from[prop] = 0;
+          }
+        }
+      }
+
+      // 设置开始点属性
+      this._start = {};
+      for (var prop in this._end.to) {
+        this._start[prop] = this._from[prop];
+      }
+
+
+      // 处理每个 stop 的 easing 属性
+      var easing = stop.easing,
+          type = typeof easing;
+
+      this._end.easing = {}
+
+      if (type === 'object') {
+        for (var prop in to) {
+          if (to.hasOwnProperty(prop)) {
+            var easing2 = easing[prop];
+            this._end.easing[prop] = typeof easing2 === 'function' ? easing2
+              : EASING_FUNCS[easing2] || this._easing[prop] || this._def;
+          }
+        }
+      }
+      else if (type === 'string' || type === 'function' || type === 'undefined') {
+        for (var prop in to) {
+          this._end.easing[prop] = type === 'function' ? easing
+            : EASING_FUNCS[easing] || this._easing[prop] || this._def;
+        }
+      }
+
+      // 处理每个 stop 的 duration 和 delay
+      this._end.duration = stop.duration || this._duration;
+      this._end.delay = stop.delay || (current === 0 ? this._delay : 0);
+
+      // 设置开始时间
+      this._startTime = now() + this._end.delay;
+    }
+
+    /**
+     * 设置动画幀的缓存值
+     */
+    function setMemoCache () {
+      var cache = {};
+      if (this._memo == true) {
+        for (var prop in this._from) {
+          cache[prop] = this._from[prop];
+        }
+      }
+      else if (typeof this._memo === 'object' && this._memo instanceof Array) {
+        for (var i = 0; i < this._memo.length; i++) {
+          var prop = this._memo[i];
+          cache[prop] = this._from[prop];
+        }
+      }
+      this._last.unshift(cache);
+      if (this._last.length > this._memoDepth) {
+        this._last.pop();
+      }
+    }
+
+    /**
+     * 根据 easingFn，计算动画幀的值
+     */
+    function calcProgress (easingFn, s, d, t, b, e) {
+      var r = (t - s) / d;
+      return easingFn(r) * (e - b) + b;
+    }
+
+    /**
+     * 根据 interpolatioinFn，计算在计算动画幀时需要的参数
+     */
+    function calcInterpolation (interpolatioinFn, s, d, t, b, e) {
+      var series = [b].concat(e),
+          r = (t - s) / d,
+          ip = interpolatioinFn(r, series);
+      return  { s: 0, d: 1, t: ip.time, b: series[ip.index], e: series[ip.index + 1] };
+    }
+
     // easing functions
     // s: start time, d: duration, t: current time, 
     // b: begin value, e: end value, r: ratio
@@ -272,12 +623,7 @@
       }
     };
 
-    function _calcProgress (easingFn, s, d, t, b, e) {
-      var r = (t - s) / d;
-      return easingFn(r) * (e - b) + b;
-    }
-
-
+    // interpolation functions
     var INTERPOLATION_FUNCS = {
       'linear': function (r, series) {
         var i = r * (series.length - 1), index = Math.floor(i), time = i - index;
@@ -288,309 +634,11 @@
       }
     };
 
-    function _calcInterpolation (interpolatioinFn, s, d, t, b, e) {
-      var series = [b].concat(e),
-          r = (t - s) / d,
-          ip = interpolatioinFn(r, series);
-      return  { s: 0, d: 1, t: ip.time, b: series[ip.index], e: series[ip.index + 1] };
-    }
-
-    function _startAnime () {
-      if (_animeStarted === false) {
-        _animeStarted = true;
-        _updateAnime();
-      }
-    }
-
-    function _stopAnime () {
-      if (_animes.length > 0) {
-        _animes.splice(0, _animes.length);
-      }
-      _animeStarted = false;
-      _cancelAnimationFrame(_animeId);
-    }
-
-    function _updateAnime () {
-      _animeId = _requestAnimationFrame(_updateAnime);
-      // console.log('_updateAnime: _animateStarted = true');
-      for (var i = 0; i < _animes.length; i++) {
-        _animes[i].update(_now());
-      }
-    }
-
-    function _addAnime (anime) {
-      if (!anime._queued) {
-        anime._queued = true;
-        _animes.push(anime);
-        if (_animes.length !== 0) {
-          _startAnime();
-        }
-      }
-    }
-
-    function _removeAnime (anime) {
-      for (var i = 0; i < _animes.length; i++) {
-        if (_animes[i] === anime) {
-          _animes[i]._queued = false;
-          _animes.splice(i, 1);
-          if (_animes.length === 0) {
-            _stopAnime();
-          }
-        }
-      }
-    }
-
-    // 动画对象
-    // param: o, options
-    function Anime (o, op) {
-
-      if (this instanceof Anime === false) {
-        return new Anime(o, op);
-      }
-
-      op = op || {};
-
-      this._queued = false;
-
-      this._from = o || {};
-      this._oriFrom = {};
-      this._to = [];
-      
-      // 保存一份原始的数据
-      for (var prop in this._from) {
-        this._oriFrom[prop] = this._from[prop];
-      }
-
-      this._duration = op.duration || 1000;
-      this._easing = op.easing || {};
-      this._delay = op.delay || 0;
-      this._interpolation = typeof op.interpolation === 'function' ?
-        op.interpolation : INTERPOLATION_FUNCS.linear;
-
-      this._started = false;
-      this._current = 0;
-
-      this.listeners = {};
-
-      if (o.onStart) this._events.start.push(o.onStart);
-      if (o.onComplete) this._events.complete.push(o.onComplete);
-      if (o.onUpdate) this._events.updata.push(o.onUpdate);
-    }
-
-    // 更新动画
-    Anime.prototype.update = function (time) {
-      var elapse = time - this._startTime;
-
-      if (elapse < 0) {
-        return this;
-      }
-
-      var data = {
-        props: this._from,
-        current: this._current,
-        phases: this._to.length
-      };
-
-      if (this._started === false) {
-        this._started = true;
-        this.emit('start', data);
-        this.emit('update', data);
-      }
-
-      if (elapse >= this._end.duration) {
-        // 设置属性
-        for (var item in this._end.to) {
-          var end = this._end.to[item];
-          this._from[item] = end.length ? end[end.length - 1] : end;
-        }
-
-        this.emit('update', data);
-        this.emit('progress', data);
-
-        // 阶段性结束
-        if (this._current < this._to.length - 1) {
-          _setNextAnimePhase.call(this, ++this._current);
-        }
-        // 全部结束
-        else if (this._current === this._to.length - 1) {
-          this.stop();
-          this.emit('complete', data);
-        }
-      }
-      else {
-        for (var item in this._end.to) {
-          var end = this._end.to[item];
-          if (end instanceof Array) {
-            var interpolationFn = this._interpolation;
-            var ip = _calcInterpolation(interpolationFn, this._startTime, this._end.duration, time, this._start[item], end);
-            this._from[item] = _calcProgress(this._end.easing[item], ip.s, ip.d, ip.t, ip.b, ip.e);
-          }
-          else {
-            this._from[item] = _calcProgress(this._end.easing[item], this._startTime, this._end.duration, time, this._start[item], this._end.to[item]);
-          }
-        }
-        this.emit('update', data);
-      }
-      return this;
-    };
-
-    // 开始动画
-    Anime.prototype.start = function () {
-
-      // 如果没有结束点，不执行动画
-      if (!this._to || this._to.length === 0) {
-        return;
-      }
-
-      // 处理缓动属性, 将缓动属性指向特定的欢动函数
-      var et = typeof this._easing;
-      if (et === 'string') {
-        this._def = EASING_FUNCS[this._easing];
-      }
-      else if (et === 'function') {
-        this._def = this._easing;
-      }
-      else {
-        this._def = EASING_FUNCS.linear;
-      }
-
-      if (et === 'object') {
-        for (var item in this._easing) {
-          var easing = this._easing[item];
-          this._easing[item] = typeof easing === 'function' ? easing : EASING_FUNCS[easing] || this._def;
-        }
-      }
-      else {
-        this._easing = {};
-      }
-
-      // 使用保存的原始数据填充 this._from
-      for (var prop in this._from) {
-        delete this._from[prop];
-      }
-      for (var prop in this._oriFrom) {
-        this._from[prop] = this._oriFrom[prop];
-      }
-
-      // 确定开始时间
-      _setNextAnimePhase.call(this, this._current = 0);
-
-      _addAnime(this);
-
-      return this;
-    };
-
-    // 停止动画
-    Anime.prototype.stop = function () {
-      this._started = false;
-      delete this._start;
-      delete this._end;
-      delete this._current;
-      _removeAnime(this);
-      return this;
-    };
-
-    Anime.prototype.to = function (to, duration, easing, delay) {
-      var stop = { to: to, duration: duration, easing: easing, delay: delay };
-      this._to.push(stop);
-      return this;
-    };
-
-    Anime.prototype.delay = function (delay) {
-      if (this._started === false) {
-        this._delay = delay;
-      }
-      return this;
-    };
-
-    Anime.prototype.easing = function (easing) {
-      if (this._started === false) {
-        this._easing = easing;
-      }
-      return this;
-    };
-
-    Anime.prototype.duration = function (duration) {
-      if (this._started === false) {
-        this._duration = duration;
-      }
-      return this;
-    };
-
-    // 添加事件支持
-    mixin(Anime.prototype, EventEmitter.prototype);
-    EventEmitter.extend(Anime.prototype, ['start', 'update', 'complete']);
-
-    function _checkValueType (value) {
-      var type = typeof value;
-      if (type === 'string' ||
-        type === 'number' ||
-        type === 'object' && value instanceof Array)
-      {
-        return true;
-      }
-      return false;
-    }
-
-    function _setNextAnimePhase (current) {
-      var lastEnd = this._end,
-          stop = this._to[current],
-          to = stop.to;
-
-      // 设置结束点属性
-      this._end = {};
-      this._end.to = {};
-      for (var prop in to) {
-        if (_checkValueType(to[prop])) {
-          this._end.to[prop] = stop.to[prop];
-          if (this._from[prop] === 'undefined') {
-            this._from[prop] = 0;
-          }
-        }
-      }
-
-      // 设置开始点属性
-      this._start = {};
-      for (var prop in this._end.to) {
-        this._start[prop] = this._from[prop];
-      }
-
-
-      // 处理每个 stop 的 easing 属性
-      var easing = stop.easing,
-          type = typeof easing;
-
-      this._end.easing = {}
-
-      if (type === 'object') {
-        for (var prop in to) {
-          if (to.hasOwnProperty(prop)) {
-            var easing2 = easing[prop];
-            this._end.easing[prop] = typeof easing2 === 'function' ? easing2
-              : EASING_FUNCS[easing2] || this._easing[prop] || this._def;
-          }
-        }
-      }
-      else if (type === 'string' || type === 'function' || type === 'undefined') {
-        for (var prop in to) {
-          this._end.easing[prop] = type === 'function' ? easing
-            : EASING_FUNCS[easing] || this._easing[prop] || this._def;
-        }
-      }
-
-      // 处理每个 stop 的 duration 和 delay
-      this._end.duration = stop.duration || this._duration;
-      this._end.delay = stop.delay || (current === 0 ? this._delay : 0);
-
-      // 设置开始时间
-      this._startTime = _now() + this._end.delay;
-    }
-
     return Anime;
   }
   
   // 获取当前时间
-  function _now () {
+  function now () {
     if (window.performance && window.performance.now) {
       return window.performance.now();
     }
@@ -599,8 +647,8 @@
     }
   }
 
-  function _requestAnimationFrame (fn) {
-    _requestAnimationFrame = window.requestAnimationFrame || 
+  function requestAnimationFrame (fn) {
+    requestAnimationFrame = window.requestAnimationFrame || 
                              window.webkitRequestAnimationFrame ||
                              window.mozRequestAnimationFrame ||
                              window.msRequestAnimationFrame ||
@@ -608,16 +656,16 @@
                                 return setTimeout(fn, 16);
                              };
 
-    _requestAnimationFrame(fn);
+    requestAnimationFrame(fn);
   }
 
-  function _cancelAnimationFrame (id) {
-    _cancelAnimationFrame = window.cancelAnimationFrame ||
+  function cancelAnimationFrame (id) {
+    cancelAnimationFrame = window.cancelAnimationFrame ||
                             window.webkitCancelAnimationFrame ||
                             window.mozCancelAnimationFrame ||
                             window.msCancelAnimationFrame ||
                             window.clearTimeout;
 
-    _cancelAnimationFrame(id);
+    cancelAnimationFrame(id);
   }
 })(window);
