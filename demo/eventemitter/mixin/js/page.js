@@ -37,11 +37,11 @@ require(['eventemitter', 'mixin'], function (EventEmitter, mixin) {
   container.remove({id: '9i3n8heb' });
 
 
-  function onChildAdd (ev) {
-    console.log('Child added: %o', ev.data.child);
+  function onChildAdd (ev, data) {
+    console.log('Child added: %o', data.child);
   }
 
-  function onChildRemove (ev) {
-    console.log('Child removed: %o', ev.data.child);
+  function onChildRemove (ev, data) {
+    console.log('Child removed: %o', data.child);
   }
 });

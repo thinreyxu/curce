@@ -25,16 +25,16 @@ require(['eventemitter'], function (EventEmitter) {
   em.off('close', onClose);
 
 
-  function onConnection (ev) {
-    console.group('connection %s', ev.data.id);
+  function onConnection (ev, data) {
+    console.group('connection %s', data.id);
       console.log('Context', this);
       console.log('Type', ev.type);
       console.log('Data', ev.data);
     console.groupEnd();
   }
 
-  function onClose (ev) {
-    console.group('close %s', ev.data.id);
+  function onClose (ev, data) {
+    console.group('close %s', data.id);
       console.log('Context', this);
       console.log('Type', ev.type);
       console.log('Data', ev.data);

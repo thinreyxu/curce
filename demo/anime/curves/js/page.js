@@ -84,32 +84,32 @@ require(['anime'], function (anime) {
       .easing({y: easing})
       .duration(duration)
       .off()
-      .onStart(function (ev) {
-        var props = ev.data.props;
+      .onStart(function (ev, data) {
+        var current = data.current;
         console.log('start');
-        lastPoint = {x: props.x, y: props.y};
+        lastPoint = {x: current.x, y: current.y};
       })
-      .onUpdate(function (ev) {
-        var props = ev.data.props;
-        console.log('update:', props);
+      .onUpdate(function (ev, data) {
+        var current = data.current;
+        console.log('update:', current);
         gd.beginPath();
         gd.strokeStyle = '#f2f2f2';
         gd.lineWidth = '1';
-        gd.moveTo(props.x + x + 0.5, height - y + 0.5);
-        gd.lineTo(props.x + x + 0.5, height - props.y - y + 0.5);
+        gd.moveTo(current.x + x + 0.5, height - y + 0.5);
+        gd.lineTo(current.x + x + 0.5, height - current.y - y + 0.5);
         gd.stroke();
 
         gd.beginPath();
         gd.strokeStyle = '#428bca';
         gd.lineWidth = '2';
         gd.moveTo(lastPoint.x + x + 0.5, height - lastPoint.y - y + 0.5);
-        gd.lineTo(props.x + x + 0.5, height - props.y - y + 0.5);
+        gd.lineTo(current.x + x + 0.5, height - current.y - y + 0.5);
         gd.stroke();
-        lastPoint = {x: props.x, y: props.y};
+        lastPoint = {x: current.x, y: current.y};
 
-        box.style.top = height - props.y - y + 'px';
+        box.style.top = height - current.y - y + 'px';
       })
-      .onComplete(function (ev) {
+      .onComplete(function (ev, data) {
         console.log('end');
       })
       .start();

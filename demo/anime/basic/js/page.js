@@ -8,10 +8,23 @@ require(['anime'], function (anime) {
         .to({y: 300}, 600, 'backOut', 2000)
         .to({x: 0}, 1200, 'quintIn', 3000)
         .to({y: 0}, 1800, 'elasticOut', 4000)
-        .onUpdate(function (ev) {
-          var props = ev.data.props;
-          box.style.left = props.x + 'px';
-          box.style.top = props.y + 'px';
+        .repeat(2)
+        .onUpdate(function (ev, data) {
+          var current = data.current;
+          box.style.left = current.x + 'px';
+          box.style.top = current.y + 'px';
+        })
+        .onStart(function (ev, data) {
+          console.log('Animate Start.');
+        })
+        .onRepeat(function (ev, data) {
+          console.log('Current Repeat: %d, Total: %d.', data.currentRepeat, data.totalRepeat);
+        })
+        .onPhaseComplete(function (ev, data) {
+          console.log('Current phase: %d, Total: %d.', data.currentPhase, data.totalPhase);
+        })
+        .onComplete(function (ev, data) {
+          console.log('Animate Complete.');
         })
         .start();
 });

@@ -14,19 +14,20 @@
     };
 
     function EventEmitter () {
-      this.listeners = {};
+      this._listeners = {};
     }
 
     EventEmitter.prototype.on = function (type, callback, data, context) {
-      return on.call(this, this.listeners, type, callback, data, context);
+      return on.call(this, this._listeners, type, callback, data, context);
     };
 
     EventEmitter.prototype.off = function (type, callback) {
-      return off.call(this, this.listeners, type, callback);
+      return off.call(this, this._listeners, type, callback);
     };
 
-    EventEmitter.prototype.emit = function (type, data, context) {
-      return emit.call(this, this.listeners, type, data, context);
+    EventEmitter.prototype.emit = function (type) {
+      var data = Array.prototype.slice.call(arguments, 1);
+      return emit.apply(this, [this._listeners, type].concat(data));
     };
 
     EventEmitter.create = function () {
@@ -39,8 +40,9 @@
       ret.off = function (type, callback) {
         return off.call(this, listeners, type, callback);
       };
-      ret.emit = function (type, data, context) {
-        return emit.call(this, listeners, type, data, context);
+      ret.emit = function (type) {
+        var data = Array.prototype.slice.call(arguments, 1);
+        return emit.apply(this, [listeners, type].concat(data));
       };
 
       return ret;
@@ -55,7 +57,6 @@
         (function (type) {
           var capped = type.charAt(0).toUpperCase() + type.substring(1);
           o['on' + capped] = function (callback, data, context) {
-
             return this.on.call(this, type, callback, data, context);
           };
         })(events[i]);
@@ -66,8 +67,8 @@
       listeners[type] = listeners[type] || [];
       listeners[type].push({
         callback: callback,
-        data: data || null,
-        context: context || null
+        data: data,
+        context: context
       });
 
       return this;
@@ -110,20 +111,18 @@
       return this;
     }
 
-    function emit (listeners, type, data, context) {
+    function emit (listeners, type) {
 
-      var callbacks = listeners[type];
-      if (callbacks) {
-        for (var i = 0; i < callbacks.length; i++) {
-          var listener = callbacks[i];
-          var cb = listener.callback,
-              ct = context !== undefined? context : listener.context,
-              dt = extend({}, listener.data, data);
-          var ev = {
-            type: type,
-            data: dt
-          };
-          cb.call(ct, ev);
+      var data = Array.prototype.slice.call(arguments, 2);
+      var ls = listeners[type];
+
+      if (ls) {
+        for (var i = 0; i < ls.length; i++) {
+          var l = ls[i],
+              ct = typeof l.context !== 'undefined' ? l.context : this,
+              ev = { type: type, data: l.data };
+
+          l.callback.apply(ct, [ev].concat(data));
         }
       }
     }
