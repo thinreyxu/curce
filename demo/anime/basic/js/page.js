@@ -26,5 +26,5 @@ require(['anime'], function (anime) {
         .onComplete(function (ev, data) {
           console.log('Animate Complete.');
         })
-        .start();
+        .play();
 });
