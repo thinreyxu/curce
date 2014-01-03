@@ -8,11 +8,18 @@ require(['anime'], function (anime) {
   var easing = easingSel.options[easingSel.selectedIndex].text,
       duration = durationSel.options[durationSel.selectedIndex].text;
   var canvas = document.getElementById('canvas'),
+      gd = canvas.getContext('2d'),
       width = canvas.width,
       height = canvas.height;
+  var box = document.getElementById('box');
   var x = 100, y = 100;
-  var tween = anime({ x: 0, y: 0 }, { delay: 1000 })
-        .to({ x: width - 2 * x, y: height - 2 * y });
+  var tween = anime({ x: 0, y: 0 })
+        .to({ x: width - 2 * x, y: height - 2 * y })
+        .delay(1000)
+        .memo()
+        .onStart(onStart)
+        .onUpdate(onUpdate)
+        .onComplete(onComplete);
 
   draw(canvas, easing, duration);
 
@@ -34,9 +41,6 @@ require(['anime'], function (anime) {
     easing = easing || 'linear';
     duration = duration ? parseInt(duration, 10) : 2000;
 
-    var box = document.getElementById('box');
-    var gd = canvas.getContext('2d');
-    var lastPoint = null;
     
     box.style.left = x - 20 + 'px';
     box.style.top = height - y + 'px';
@@ -78,40 +82,40 @@ require(['anime'], function (anime) {
     gd.font = 'normal 14px monospace';
     gd.fillStyle = '#428bca';
     gd.fillText(easing + ' ' + duration + 'ms', 20, 40);
-    // return;
+
     // 动画
     tween.stop()
       .easing({y: easing})
       .duration(duration)
-      .off()
-      .onStart(function (ev, data) {
-        var current = data.current;
-        console.log('start');
-        lastPoint = {x: current.x, y: current.y};
-      })
-      .onUpdate(function (ev, data) {
-        var current = data.current;
-        console.log('update:', current);
-        gd.beginPath();
-        gd.strokeStyle = '#f2f2f2';
-        gd.lineWidth = '1';
-        gd.moveTo(current.x + x + 0.5, height - y + 0.5);
-        gd.lineTo(current.x + x + 0.5, height - current.y - y + 0.5);
-        gd.stroke();
+      .play();
+  }
 
-        gd.beginPath();
-        gd.strokeStyle = '#428bca';
-        gd.lineWidth = '2';
-        gd.moveTo(lastPoint.x + x + 0.5, height - lastPoint.y - y + 0.5);
-        gd.lineTo(current.x + x + 0.5, height - current.y - y + 0.5);
-        gd.stroke();
-        lastPoint = {x: current.x, y: current.y};
+  function onStart (ev, data) {
+    console.log('start');
+  }
+  function onUpdate(ev, data) {
+    var current = data.current,
+        last = data.last[0];
 
-        box.style.top = height - current.y - y + 'px';
-      })
-      .onComplete(function (ev, data) {
-        console.log('end');
-      })
-      .start();
+    console.log('update:', data);
+
+    gd.beginPath();
+    gd.strokeStyle = '#f2f2f2';
+    gd.lineWidth = '1';
+    gd.moveTo(current.x + x + 0.5, height - y + 0.5);
+    gd.lineTo(current.x + x + 0.5, height - current.y - y + 0.5);
+    gd.stroke();
+
+    gd.beginPath();
+    gd.strokeStyle = '#428bca';
+    gd.lineWidth = '2';
+    gd.moveTo(last.x + x + 0.5, height - last.y - y + 0.5);
+    gd.lineTo(current.x + x + 0.5, height - current.y - y + 0.5);
+    gd.stroke();
+
+    box.style.top = height - current.y - y + 'px';
+  }
+  function onComplete(ev, data) {
+    console.log('end');
   }
 });

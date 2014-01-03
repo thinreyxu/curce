@@ -91,10 +91,10 @@ require(['anime'], function (anime) {
           gd.restore();
         });
 
-  tween1.start();
-  tween2.start();
-  tween3.start();
-  tween4.start();
+  tween1.play();
+  tween2.play();
+  tween3.play();
+  tween4.play();
 
   function onStart () {
     gd.strokeStyle = '#666';
