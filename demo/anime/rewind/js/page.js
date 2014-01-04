@@ -1,9 +1,9 @@
 requirejs.config({
   baseUrl: '../../../src/'
 });
-require(['anime'], function (anime) {
+require(['anime'], function (Anime) {
   var box = document.getElementById('box');
-  var tween = anime({x: 0, y: 0})
+  var tween = Anime({x: 0, y: 0})
         .to({x: [300, 200, 100, 400, 600, 500, 300]}, 3000, 'linear', 1000)
         .to({y: 300}, 3000, 'quintOut', 1000)
         .repeat(1)

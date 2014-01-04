@@ -10,7 +10,7 @@
   }
   else {
     _exports = _exports.curce || (_exports.curce = {});
-    _exports.anime = init(_exports.mixin, _exports.extend, _exports.EventEmitter);
+    _exports.Anime = init(_exports.mixin, _exports.extend, _exports.EventEmitter);
   }
 
   function init (mixin, extend, EventEmitter) {
@@ -393,7 +393,7 @@
     Anime.Direction_Forward = 0;
     Anime.Direction_Reverse = 1;
 
-    function init () {
+    function init (fromStart) {
       var s = this._s;
 
       // 处理缓动属性, 将缓动属性指向特定的缓动函数
@@ -434,22 +434,12 @@
 
       // 确定开始时间及动画的开始结束点数据
       if (this._dir === Anime.Direction_Forward) {
-        var from = this._oriFrom;
-        setNextAnimePhase.call(this, this._current = 0);
+        fromStart && setFrom.call(this, this._oriFrom);
+        setNextPhase.call(this, this._current = 0);
       }
       else if (this._dir === Anime.Direction_Reverse) {
-        var from = getCapture.call(this, this._to.length);
-        setNextAnimePhase.call(this, this._current = this._to.length - 1);
-      }
-
-      // 清除 this._from 的当前值
-      for (var prop in this._from) {
-        delete this._from[prop];
-      }
-
-      // 填充开始值
-      for (var prop in from) {
-        this._from[prop] = from[prop];
+        fromStart && setFrom.call(this, getCapture.call(this, this._to.length));
+        setNextPhase.call(this, this._current = this._to.length - 1);
       }
 
       // 处理动画目标值缓存
@@ -508,13 +498,13 @@
         this.emit('phaseComplete', data);
         // 阶段性结束
         if (this._current < this._to.length - 1) {
-          setNextAnimePhase.call(this, ++this._current);
+          setNextPhase.call(this, ++this._current);
         }
         // 全部结束
         else if (this._current === this._to.length - 1) {
           if (this._repeat++ < this._s.repeat) {
             this.emit('repeat', data);
-            init.call(this);
+            init.call(this, true);
           }
           else {
             this.stop();
@@ -527,13 +517,13 @@
         this.emit('phaseComplete', data);
         // 阶段性结束
         if (this._current > 0) {
-          setNextAnimePhase.call(this, --this._current);
+          setNextPhase.call(this, --this._current);
         }
         // 全部结束
         else if (this._current === 0) {
           if (this._repeat-- > 0) {
             this.emit('repeat', data);
-            init.call(this);
+            init.call(this, true);
           }
           else {
             this.stop();
@@ -568,7 +558,7 @@
       // 加入动画队列
       if (this._started === false || fromStart) {
         this._repeat = 0;
-        init.call(this);
+        init.call(this, fromStart);
       }
       else {
         this._endTime = now() + this._end.duration * (1 - this._progress);
@@ -596,7 +586,7 @@
       // 加入动画队列
       if (this._started === false || fromEnd) {
         this._repeat = this._s.repeat;
-        init.call(this);
+        init.call(this, fromEnd);
       }
       else {
         this._endTime = now() + this._end.duration * this._progress;
@@ -634,6 +624,25 @@
       };
       this._to.push(stop);
       return this;
+    };
+
+    Anime.prototype.from = function (from) {
+      for (var prop in this._oriFrom) {
+        delete this._oriFrom[prop];
+      }
+      for (var prop in from) {
+        this._oriFrom[prop] = from[prop];
+      }
+      return this;
+    };
+
+    Anime.prototype.splice = function (index, count) {
+      this._to.splice.apply(this._to, arguments);
+      return this;
+    };
+
+    Anime.prototype.size = function () {
+      return this._to.length;
     };
 
     /*
@@ -684,71 +693,63 @@
     /**
      * 设置下一动画阶段的开始点，结束点，以及开始的时间
      */
-    function setNextAnimePhase (current) {
+    function setNextPhase (current) {
       var s = this._s;
       var lastEnd = this._end,
-          stop = this._to[current],
-          to = stop.to;
+          stop = this._to[current];
 
-      // 设置结束点属性
+      // 设置开始/结束点属性
       this._end = {};
-      this._end.to = {};
-      for (var prop in to) {
-        if (typeof to[prop] === 'string' ||
-            typeof to[prop] === 'number' ||
-            to[prop] instanceof Array)
-        {
-          this._end.to[prop] = stop.to[prop];
-          if (this._from[prop] === 'undefined') {
-            this._from[prop] = 0;
-          }
-        }
-      }
 
-      // 设置开始点属性
-      this._start = getCapture.call(this, current);
-
-      // 处理每个 stop 的 easing 属性
+      // 1.处理每个 stop 的 easing 属性
       var easing = stop.easing,
           type = typeof easing;
 
       this._end.easing = {};
 
       if (type === 'object') {
-        for (var prop in to) {
+        for (var prop in stop.to) {
           var easing2 = easing[prop];
           this._end.easing[prop] = typeof easing2 === 'function' ?
             easing2 : Easing[normalizeEasingName(easing2)] || s.easing[prop] || s.easingFn;
         }
       }
       else if (type === 'string' || type === 'function' || type === 'undefined') {
-        for (var prop in to) {
+        for (var prop in stop.to) {
           this._end.easing[prop] = type === 'function' ?
             easing : Easing[normalizeEasingName(easing)] || s.easing[prop] || s.easingFn;
         }
       }
 
-      // 处理每个 stop 的 interpolation 属性
+      // 2.处理每个 stop 的 interpolation 属性
       this._end.interpolation = typeof stop.interpolation === 'function' ?
         stop.interpolation : Interpolation[stop.interpolation] || s.interpolationFn;
 
-      // 处理每个 stop 的 duration 和 delay
+      // 3.处理每个 stop 的 duration 和 delay
       this._end.duration = stop.duration || this._s.duration;
 
-      // 设置开始/结束时间
+      this._start = {};
+      this._end.to = {};
+
       if (this._dir === Anime.Direction_Forward) {
-        // this._startTime = now() + this._end.delay;
+        for (var prop in stop.to) {
+          this._start[prop] = this._from[prop] || 0;
+          this._end.to[prop] = stop.to[prop];
+        }
         this._end.delay = stop.delay || (current === 0 ? this._s.delay : 0);
         this._progress = 0;
         this._endTime = now() + this._end.delay + this._end.duration;
       }
       else if (this._dir === Anime.Direction_Reverse) {
+        this._start = getCapture.call(this, current);
+        for (var prop in stop.to) {
+          this._end.to[prop] = this._from[prop];
+        }
         this._end.delay = current === this._to.length - 1 ?
           (this._repeat === s.repeat ? 0 : (this._to[0].delay || 0)) :
           (this._to[current + 1].delay || 0);
         this._progress = 1;
         this._endTime = now() + this._end.delay + this._end.duration;
-        // this._startTime = this._endTime - this._end.duration * 2;
       }
     }
 
@@ -763,6 +764,17 @@
       this._last.unshift(cache);
       if (this._last.length > this._s.memo) {
         this._last.pop();
+      }
+    }
+
+    function setFrom (from) {
+      // 清除 this._from 的当前值
+      for (var prop in this._from) {
+        delete this._from[prop];
+      }
+      // 填充开始值
+      for (var prop in from) {
+        this._from[prop] = from[prop];
       }
     }
 

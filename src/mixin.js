@@ -4,7 +4,7 @@
   }
   else {
     _exports = _exports.curce || (_exports.curce = {});
-    _exports.inherit = init();
+    _exports.mixin = init();
   }
 
   function init () {

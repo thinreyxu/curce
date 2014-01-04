@@ -2,7 +2,7 @@ require.config({
   baseUrl: '../../../src/'
 });
 
-require(['anime'], function (anime) {
+require(['anime'], function (Anime) {
 
   var canvas = document.getElementById('canvas'),
       W = canvas.width,
@@ -26,7 +26,7 @@ require(['anime'], function (anime) {
       stop = { x: [center.x, center.x - rh],
               y: [center.y - rv, center.y] };
 
-  var tween1 = anime(o)
+  var tween1 = Anime(o)
         .to(stop)
         .easing({ x: 'circInOut', y: 'linear' })
         .duration(duration * 2)
@@ -34,7 +34,7 @@ require(['anime'], function (anime) {
         .onStart(onStart)
         .onUpdate(onUpdate);
 
-  var tween2 = anime({ x: center.x + rh, y: center.y })
+  var tween2 = Anime({ x: center.x + rh, y: center.y })
         .to({x: center.x, y: center.y - rv}, duration, { x: 'circIn' })
         .to({x: center.x - rh, y: center.y}, duration, { x: 'circOut' })
         .to({x: center.x, y: center.y + rv}, duration, { x: 'circIn' })
@@ -44,7 +44,7 @@ require(['anime'], function (anime) {
         .onUpdate(onUpdate);
 
   var r = 0, toAngle = -360 * 5;
-  var tween3 = anime({ angle: 0 })
+  var tween3 = Anime({ angle: 0 })
         .to({ angle: toAngle })
         .duration(duration)
         .delay(duration * 4)
@@ -72,7 +72,7 @@ require(['anime'], function (anime) {
         });
 
   var a = 30;
-  var tween4 = anime({ angle: a })
+  var tween4 = Anime({ angle: a })
         .to({ angle: -a })
         .duration(duration)
         .delay(duration * 5)

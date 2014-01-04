@@ -4,7 +4,7 @@
   }
   else {
     _exports = _exports.curce || (_exports.curce = {});
-    _exprots.extend = init();
+    _exports.extend = init();
   }
 
   function init () {

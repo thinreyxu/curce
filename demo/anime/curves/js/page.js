@@ -1,7 +1,7 @@
 requirejs.config({
   baseUrl: '../../../src/'
 });
-require(['anime'], function (anime) {
+require(['anime'], function (Anime) {
   var easingSel = document.getElementById('select_easing'),
       durationSel = document.getElementById('select_duration'),
       redrawBtn = document.getElementById('btn_redraw');
@@ -13,7 +13,7 @@ require(['anime'], function (anime) {
       height = canvas.height;
   var box = document.getElementById('box');
   var x = 100, y = 100;
-  var tween = anime({ x: 0, y: 0 })
+  var tween = Anime({ x: 0, y: 0 })
         .to({ x: width - 2 * x, y: height - 2 * y })
         .delay(1000)
         .memo()
@@ -87,17 +87,17 @@ require(['anime'], function (anime) {
     tween.stop()
       .easing({y: easing})
       .duration(duration)
-      .play();
+      .play(true);
   }
 
   function onStart (ev, data) {
-    console.log('start');
+    // console.log('start');
   }
   function onUpdate(ev, data) {
     var current = data.current,
         last = data.last[0];
 
-    console.log('update:', data);
+    // console.log('update:', data);
 
     gd.beginPath();
     gd.strokeStyle = '#f2f2f2';
@@ -116,6 +116,6 @@ require(['anime'], function (anime) {
     box.style.top = height - current.y - y + 'px';
   }
   function onComplete(ev, data) {
-    console.log('end');
+    // console.log('end');
   }
 });
