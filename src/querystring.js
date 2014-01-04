@@ -4,7 +4,7 @@
   }
   else {
     _exports = _exports.curce || (_exports.curce = {});
-    _exports.QueryString = init(_exports.object);
+    _exports.QueryString = init(_exports.object, _exports.array);
   }
 
   function init (object, array) {

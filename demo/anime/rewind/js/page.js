@@ -26,7 +26,8 @@ require(['anime'], function (Anime) {
         });
 
   var play = document.getElementById('play'),
-      rewind = document.getElementById('rewind');
+      rewind = document.getElementById('rewind'),
+      stop = document.getElementById('stop');
 
   play.onclick = function () {
     tween.play();
@@ -34,5 +35,9 @@ require(['anime'], function (Anime) {
 
   rewind.onclick = function () {
     tween.rewind();
+  };
+
+  stop.onclick = function () {
+    tween.stop();
   };
 });

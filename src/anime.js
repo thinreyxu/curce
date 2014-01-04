@@ -393,7 +393,7 @@
     Anime.Direction_Forward = 0;
     Anime.Direction_Reverse = 1;
 
-    function init (fromStart) {
+    function init () {
       var s = this._s;
 
       // 处理缓动属性, 将缓动属性指向特定的缓动函数
@@ -434,11 +434,11 @@
 
       // 确定开始时间及动画的开始结束点数据
       if (this._dir === Anime.Direction_Forward) {
-        fromStart && setFrom.call(this, this._oriFrom);
+        setFrom.call(this, this._oriFrom);
         setNextPhase.call(this, this._current = 0);
       }
       else if (this._dir === Anime.Direction_Reverse) {
-        fromStart && setFrom.call(this, getCapture.call(this, this._to.length));
+        setFrom.call(this, getCapture.call(this, this._to.length));
         setNextPhase.call(this, this._current = this._to.length - 1);
       }
 
@@ -502,9 +502,10 @@
         }
         // 全部结束
         else if (this._current === this._to.length - 1) {
-          if (this._repeat++ < this._s.repeat) {
+          if (this._repeat < this._s.repeat) {
+            this._repeat++;
             this.emit('repeat', data);
-            init.call(this, true);
+            init.call(this);
           }
           else {
             this.stop();
@@ -521,9 +522,10 @@
         }
         // 全部结束
         else if (this._current === 0) {
-          if (this._repeat-- > 0) {
+          if (this._repeat > 0) {
+            this._repeat--;
             this.emit('repeat', data);
-            init.call(this, true);
+            init.call(this);
           }
           else {
             this.stop();
@@ -555,15 +557,19 @@
 
       this._dir = Anime.Direction_Forward;
 
-      // 加入动画队列
-      if (this._started === false || fromStart) {
+      if ((!this._progress || this._progress === 1) &&
+        (!this._repeat || this._repeat === this._s.repeat) &&
+        (!this._current || this._current === this._to.length - 1) ||
+        fromStart)
+      {
         this._repeat = 0;
-        init.call(this, fromStart);
+        init.call(this);
       }
       else {
         this._endTime = now() + this._end.duration * (1 - this._progress);
       }
 
+      // 加入动画队列
       addAnime(this);
 
       return this;
@@ -583,15 +589,19 @@
 
       this._dir = Anime.Direction_Reverse;
 
-      // 加入动画队列
-      if (this._started === false || fromEnd) {
+      if ((!this._progress || this._progress === 1) &&
+        (!this._repeat || this._repeat === this._s.repeat) &&
+        (!this._current || this._current === this._to.length - 1) ||
+        fromEnd)
+      {
         this._repeat = this._s.repeat;
-        init.call(this, fromEnd);
+        init.call(this);
       }
       else {
         this._endTime = now() + this._end.duration * this._progress;
       }
 
+      // 加入动画队列
       addAnime(this);
 
       return this;
@@ -743,7 +753,7 @@
       else if (this._dir === Anime.Direction_Reverse) {
         this._start = getCapture.call(this, current);
         for (var prop in stop.to) {
-          this._end.to[prop] = this._from[prop];
+          this._end.to[prop] = stop.to[prop];
         }
         this._end.delay = current === this._to.length - 1 ?
           (this._repeat === s.repeat ? 0 : (this._to[0].delay || 0)) :
