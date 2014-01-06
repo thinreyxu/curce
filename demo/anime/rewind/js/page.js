@@ -23,6 +23,7 @@ require(['anime'], function (Anime) {
         })
         .onComplete(function (ev, data) {
           console.log('Anime Complete.');
+          console.log(this);
         });
 
   var play = document.getElementById('play'),
@@ -38,6 +39,6 @@ require(['anime'], function (Anime) {
   };
 
   stop.onclick = function () {
-    tween.stop();
+    tween.stop(true);
   };
 });

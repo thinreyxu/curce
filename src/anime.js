@@ -610,13 +610,45 @@
     /*
      * 停止动画
      */
-    Anime.prototype.stop = function (jumpToEnd) {
+    Anime.prototype.stop = function (jumpToEnd, dir) {
       jumpToEnd = jumpToEnd || false;
+      dir = typeof dir !== 'undefined' ? dir : this._dir;
 
-      this._started = false;
+      if (jumpToEnd && this._queued) {
+          this._dir = dir;
+        if (dir === Anime.Direction_Forward) {
+          this._current = this._to.length - 1;
+          this._progress = 1;
+          this._repeat = this._s.repeat;
+          var stop = getCapture.call(this, this._to.length);
+        }
+        else if (dir === Anime.Direction_Reverse) {
+          this._current = 0;
+          this._progress = 0;
+          this._repeat = 0;
+          var stop = getCapture.call(this, 0);
+        }
+        setNextPhase.call(this, this._current);
+        setFrom.call(this, stop);
+        this.update(this._endTime = now());
+        /*var data = {
+          current: this._from,
+          last: this._last,
+          currentPhase: this._current + 1,
+          totalPhase: this._to.length,
+          currentRepeat: (dir === Anime.Direction_Forward ? this._repeat : this._s.repeat - this._repeat) + 1,
+          totalRepeat: this._s.repeat,
+          dir: this._dir
+        };
+        this.emit('update', data);
+        this.emit('phaseComplete', data);
+        this.emit('complete', data);*/
+      }
 
       // 从动画队列中移除
       removeAnime(this);
+
+      this._started = false;
 
       return this;
     };
@@ -652,6 +684,7 @@
     };
 
     Anime.prototype.size = function () {
+
       return this._to.length;
     };
 
@@ -807,8 +840,7 @@
 
     function calc (p, b, e, easingFn, interpolationFn) {
       if (e instanceof Array) {
-        var series = [b].concat(e);
-        var ip = interpolationFn(p, series);
+        var ip = interpolationFn(p, [b].concat(e));
         p = ip.p;
         b = ip.b;
         e = ip.e;
