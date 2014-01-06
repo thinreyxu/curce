@@ -378,11 +378,13 @@
         this._oriFrom[prop] = this._from[prop];
       }
 
-      this._queued = false;  // 未加入动画队列
+      this._queued = false;       // 未加入动画队列
       this._initialized = false;  // 未初始化全局设置
-      this._started = false;  // 未开始
-      this._dir = 0;  // 动画方向为正向
-      this._current = 0;  // 动画开始阶段为 0
+      this._started = false;      // 未开始
+      this._dir = 0;              // 动画方向为正向
+      this._current = 0;          // 动画开始阶段为 0
+      this._repeat = 0;           // 动画重复次数
+      this._progress = 0;         // 动画进程
 
       // 混入 EventEmitter 时，需要实现的属性
       this._listeners = {};
@@ -464,7 +466,7 @@
         last: this._last,
         currentPhase: this._current + 1,
         totalPhase: this._to.length,
-        currentRepeat: (this._dir === Anime.Direction_Forward ? this._repeat : this._s.repeat - this._repeat) + 1,
+        currentRepeat: this._s.repeat === Infinity ? Infinity : (this._dir === Anime.Direction_Forward ? this._repeat : this._s.repeat - this._repeat) + 1,
         totalRepeat: this._s.repeat,
         dir: this._dir
       };
@@ -502,8 +504,8 @@
         }
         // 全部结束
         else if (this._current === this._to.length - 1) {
-          if (this._repeat < this._s.repeat) {
-            this._repeat++;
+          if (this._s.repeat === Infinity || this._repeat < this._s.repeat) {
+            this._s.repeat !== Infinity && this._repeat++;
             this.emit('repeat', data);
             init.call(this);
           }
@@ -522,8 +524,8 @@
         }
         // 全部结束
         else if (this._current === 0) {
-          if (this._repeat > 0) {
-            this._repeat--;
+          if (this._s.repeat === Infinity || this._repeat > 0) {
+            this._s.repeat !== Infinity && this._repeat--;
             this.emit('repeat', data);
             init.call(this);
           }
@@ -557,11 +559,11 @@
 
       this._dir = Anime.Direction_Forward;
 
-      if ((!this._progress || this._progress === 1) &&
-        (!this._repeat || this._repeat === this._s.repeat) &&
-        (!this._current || this._current === this._to.length - 1) ||
+      if (!this._progress && !this._repeat && !this._current ||
+        this._progress === 1 && this._repeat === this._s.repeat && this._current === this._to.length - 1 ||
         fromStart)
       {
+
         this._repeat = 0;
         init.call(this);
       }
@@ -575,7 +577,7 @@
       return this;
     };
 
-    /**
+    /*
      * 反转动画
      */
     Anime.prototype.rewind = function (fromEnd) {
@@ -589,9 +591,8 @@
 
       this._dir = Anime.Direction_Reverse;
 
-      if ((!this._progress || this._progress === 1) &&
-        (!this._repeat || this._repeat === this._s.repeat) &&
-        (!this._current || this._current === this._to.length - 1) ||
+      if (!this._progress && !this._repeat && !this._current ||
+        this._progress === 1 && this._repeat === this._s.repeat && this._current === this._to.length - 1 ||
         fromEnd)
       {
         this._repeat = this._s.repeat;
@@ -791,6 +792,7 @@
         this._end.delay = current === this._to.length - 1 ?
           (this._repeat === s.repeat ? 0 : (this._to[0].delay || 0)) :
           (this._to[current + 1].delay || 0);
+        s.repeat === Infinity && (this._repeat = 0);  // bitter code
         this._progress = 1;
         this._endTime = now() + this._end.delay + this._end.duration;
       }
