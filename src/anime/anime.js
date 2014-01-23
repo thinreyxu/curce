@@ -5,342 +5,109 @@
  */
 
 (function (_exports) {
-  if (window.define) {
-    define(['mixin', 'extend', 'eventemitter'], init);
+  if (typeof define === 'function' && define.amd) {
+    define(['mixin', 'extend', 'eventemitter', 'anime/queue'], init);
   }
   else {
     _exports = _exports.curce || (_exports.curce = {});
-    _exports.Anime = init(_exports.mixin, _exports.extend, _exports.EventEmitter);
+    _exports.Anime = init(_exports.mixin, _exports.extend, _exports.EventEmitter, _exports.AnimeQueue);
   }
 
-  function init (mixin, extend, EventEmitter) {
+  function init (mixin, extend, EventEmitter, AnimeQueue) {
 
-    var animes = [];
+    var animes = new AnimeQueue();
     var animeStarted = false;
     var animeId;
+    var s = {
+      autoStart: true
+    };
 
     // 缓动函数
-    var Easing = {
-      // 一次
-      Linear: function (r) {
-        return r;
-      },
-      // 二次
-      QuadIn: function (r) {
-        return r * r;
-      },
-      QuadOut: function (r) {
-        return r * (2 - r);
-      },
-      QuadInOut: function (r) {
-        if (r <= 0.5) {
-          return 2 * r * r;
-        }
-        else {
-          return (2 * r * (2 - r) - 1);
-        }
-      },
-      // 三次
-      CubicIn: function (r) {
-        return Math.pow(r, 3);
-      },
-      CubicOut: function (r) {
-        return (Math.pow(r - 1, 3) + 1);
-      },
-      CubicInOut: function (r) {
-        if (r <= 0.5) {
-          return Math.pow(r, 3) * 4;
-        }
-        else {
-          return (Math.pow(r - 1, 3) * 4 + 1);
-        }
-      },
-      // 四次
-      QuartIn: function (r) {
-        return Math.pow(r, 4);
-      },
-      QuartOut: function (r) {
-        return (1 - Math.pow(r - 1, 4));
-      },
-      QuartInOut: function (r) {
-        if (r <= 0.5) {
-          return Math.pow(r, 4) * 8;
-        }
-        else {
-          return (1 - Math.pow(r - 1, 4) * 8);
-        }
-      },
-      // 五次
-      QuintIn: function (r) {
-        return Math.pow(r, 5);
-      },
-      QuintOut: function (r) {
-        return (Math.pow(r - 1, 5) + 1);
-      },
-      QuintInOut: function (r) {
-        if (r <= 0.5) {
-          return Math.pow(r, 5) * 16;
-        }
-        else {
-          return (Math.pow(r - 1, 5) * 16 + 1);
-        }
-      },
-      // 三角函数
-      SineIn: function (r) {
-        return (1 - Math.cos(Math.PI / 2 * r));
-      },
-      SineOut: function (r) {
-        return Math.sin(Math.PI / 2 * r);
-      },
-      SineInOut: function (r) {
-        return (1 - Math.cos(Math.PI * r)) / 2;
-      },
-      // 指数/对数
-      ExpoIn: function (r) {
-        if (r === 0) {
-          return 0;
-        }
-        else {
-          return Math.pow(1024, r - 1);
-        }
-      },
-      ExpoOut: function (r) {
-        if (r === 1) {
-          return 1;
-        }
-        else {
-          return (1 - Math.pow(1024, -r));
-        }
-      },
-      ExpoInOut: function (r) {
-        if (r === 0) {
-          return 0;
-        }
-        else if (r === 1) {
-          return 1;
-        }
-        
-        if (r <= 0.5) {
-          return Math.pow(1024, 2 * r - 1) / 2;
-        }
-        else {
-          return (1 - Math.pow(1024, 1 - 2 * r) / 2);
-        }
-      },
-      // 圆
-      CircIn: function (r) {
-        return ( 1 - Math.sqrt(1 - r * r));
-      },
-      CircOut: function (r) {
-        return Math.sqrt(r * (2 - r));
-      },
-      CircInOut: function (r) {
-        if (r <= 0.5) {
-          return (0.5 - Math.sqrt(0.25 - r * r));
-        }
-        else {
-          return (Math.sqrt((r - 0.5) * (1.5 - r)) + 0.5);
-        }
-      },
-      // 弹性
-      ElasticIn: function (r) {
-        if (r === 0) {
-          return 0;
-        }
-        else {
-          return Math.pow(1024, r - 1) * Math.sin(9 / 2 * Math.PI * r);
-        }
-      },
-      ElasticOut: function (r) {
-        if (r === 1) {
-          return 1;
-        }
-        else {
-          return (1 - Math.pow(1024, -r) * Math.cos(9 / 2 * Math.PI * r));
-        }
-      },
-      ElasticInOut: function (r) {
-        if (r === 0) {
-          return 0;
-        }
-        if (r === 1) {
-          return 1;
-        }
-        if (r < 0.5) {
-          return Math.pow(1024, r * 2 - 1) * Math.sin(9 * Math.PI * r) / 2;
-        }
-        else {
-          return (1 - Math.pow(1024, 1 - 2 * r) * Math.sin(9 * Math.PI * r) / 2);
-        }
-      },
-      // 回复
-      BackIn: function (r) {
-        var k = 2;
-
-        return Math.pow(r, 2) * ((1 + k) * r - k);
-      },
-      BackOut: function (r) {
-        var k = 2;
-
-        return (Math.pow(r - 1, 2) * ((k + 1) * r - 1) + 1);
-      },
-      BackInOut: function (r) {
-        var k = 2;
-
-        if (r <= 0.5) {
-          return 2 * Math.pow(r, 2) * (2 * (k + 1) * r - k);
-        }
-        else {
-          return (2 * Math.pow(r - 1, 2) * (2 * (k + 1) * r - k - 2) + 1);
-        }
-      },
-      // 弹跳
-      // 设 g = 10，四次弹跳时，求得 k ～= 0.397913141;
-      // t1 = Math.sqrt(2/g) ~= 0.4472135955
-      // t2 = k * t1 = 0.17795216648; 2 * t2 = 0.35590433296
-      // t3 = k * t2 = 0.07080950551; 2 * t3 = 0.14161901102
-      // t4 = k * t3 = 0.02817603275; 2 * t4 = 0.05635206550
-      BounceIn: function (r) {
-        var t1 = 0.4472135955;
-        var t2 = 0.17795216648;
-        var t3 = 0.07080950551;
-        var t4 = 0.02817603275;
-
-        if (r === 1) {
-          return 1;
-        }
-        if (r <= 2 * t4) {
-          return 5 * (Math.pow(t4, 2) - Math.pow(r - t4, 2));
-        }
-        else if (r > 2 * t4 && r <= 2 * (t4 + t3)) {
-          return 5 * (Math.pow(t3, 2) - Math.pow(r - 2 * t4 - t3, 2));
-        }
-        else if (r > 2 * (t4 + t3) && r <= 2 * (t4 + t3 + t2)) {
-          return 5 * (Math.pow(t2, 2) - Math.pow(r - 2 * (t4 + t3) - t2, 2));
-        }
-        else {
-          return (1 - 5 * Math.pow(r - 1, 2));
-        }
-      },
-      BounceOut: function (r) {
-        var t1 = 0.4472135955;
-        var t2 = 0.17795216648;
-        var t3 = 0.07080950551;
-        var t4 = 0.02817603275;
-
-        if (r === 1) {
-          return 1;
-        }
-        if (r <= t1) {
-          return 5 * r * r;
-        }
-        else if (r > t1 && r <= 2 * t2 + t1) {
-          return (5 * Math.pow(r - t1 - t2, 2) - 5 * Math.pow(t2, 2) + 1);
-        }
-        else if (r > 2 * t2 + t1 && r <= 2 * (t3 + t2) + t1) {
-          return (5 * Math.pow(r - t1 - 2 * t2 - t3, 2) - 5 * Math.pow(t3, 2) + 1);
-        }
-        else {
-          return (5 * Math.pow(r - t1 - 2 * t2 - 2 * t3 - t4, 2) - 5 * Math.pow(t4, 2) + 1);
-        }
-      },
-      BounceInOut: function (r) {
-        var t1 = 0.4472135955;
-        var t2 = 0.17795216648;
-        var t3 = 0.07080950551;
-        var t4 = 0.02817603275;
-
-        if (r <= t4) {
-          return 5 * (Math.pow(t4, 2) - Math.pow(2 * r - t4, 2)) / 2;
-        }
-        else if (r > t4 && r <= t4 + t3) {
-          return 5 * (Math.pow(t3, 2) - Math.pow(2 * r - 2 * t4 - t3, 2)) / 2;
-        }
-        else if (r > t4 + t3 && r <= t4 + t3 + t2) {
-          return 5 * (Math.pow(t2, 2) - Math.pow(2 * r - 2 * (t4 + t3) - t2, 2)) / 2;
-        }
-        else if (r > t4 + t3 + t2 && r <= 0.5) {
-          return (1 - 5 * Math.pow(2 * r - 1, 2)) / 2;
-        }
-        else if (r > 0.5 && r <= 0.5 + t1/2) {
-          return (5 * Math.pow(2 * r - 1, 2) + 1) / 2;
-        }
-        else if (r > 0.5 + t1/2 && r <= 0.5 + t2 + t1/2) {
-          return (5 * Math.pow(2 * r - 1 - t1 - t2, 2)/2 - 5 * Math.pow(t2, 2)/2 + 1);
-        }
-        else if (r > 0.5 + t2 + t1/2 && r <= 0.5 + t3 + t2 + t1/2) {
-          return (5 * Math.pow(2 * r - 1 - t1 - 2 * t2 - t3, 2)/2 - 5 * Math.pow(t3, 2)/2 + 1);
-        }
-        else {
-          return (5 * Math.pow(2 * r - 1 - t1 - 2 * t2 - 2 * t3 - t4, 2)/2 - 5 * Math.pow(t4, 2)/2 + 1);
-        }
+    var Easing = { Linear: function (r) { return r; } };
+    Easing.Default = Easing.Linear;
+    Anime.extendEasing = function (name, easing) {
+      if (typeof name === 'object') {
+        var easings = name;
+        for (name in easings) Easing[name] = easings[name];
+      }
+      else if (typeof name === 'string') {
+        Easing[name] = easing;
       }
     };
-    // 默认缓动
-    Easing.Default = Easing.Linear;
 
     // 插值函数
     var Interpolation = {
       Linear: function (r, series) {
         var i = r * (series.length - 1), index = Math.floor(i), p = i - index;
-        return {
-          b: series[index],
-          e: series[index === series.length - 1 ? index : index + 1],
-          p: p
-        };
+        if (r === 0 || r === 1) return series[index];
+        else return (series[index + 1] - series[index]) * p + series[index];
       }
     };
+
     // 默认插值
     Interpolation.Default = Interpolation.Linear;
-
+    Anime.extendInterpolation = function (name, interpolation) {
+      if (typeof name === 'object') {
+        var interpolations = name;
+        for (name in interpolations) Interpolation[name] = interpolations[name];
+      }
+      else if (typeof name === 'string') {
+        Easing[name] = interpolation;
+      }
+    };
 
 
     /**
      * 动画全局函数
      */
+    Anime.play = startAnime;
     function startAnime () {
       if (animeStarted === false) {
         animeStarted = true;
-        updateAnime();
+        (function update() {
+          updateAnime();
+          animeId = requestAnimationFrame(update);
+        })();
       }
     }
 
-    function stopAnime () {
-      if (animes.length > 0) {
-        animes.splice(0, animes.length);
+    Anime.stop = stopAnime;
+    function stopAnime (clearQueue) {
+      if (clearQueue) {
+        animes.stop();
       }
       animeStarted = false;
       cancelAnimationFrame(animeId);
     }
 
+    Anime.update = updateAnime;
     function updateAnime () {
-      animeId = requestAnimationFrame(updateAnime);
-      for (var i = 0; i < animes.length; i++) {
-        animes[i].update(now());
-      }
+      animes.update(now());
+    }
+
+    Anime.config = configAnime;
+    function configAnime (op) {
+      extend(s, op);
     }
 
     function addAnime (anime) {
       if (!anime._queued) {
         anime._queued = true;
-        animes.push(anime);
-        if (animes.length === 1) {
+        animes.add(anime);
+        if (animes.size() === 1 && s.autoStart) {
           startAnime();
         }
       }
     }
 
     function removeAnime (anime) {
-      for (var i = 0; i < animes.length; i++) {
-        if (animes[i] === anime) {
-          animes[i]._queued = false;
-          animes.splice(i--, 1);
-          if (animes.length === 0) {
-            stopAnime();
-          }
-        }
+      anime._queued = false;
+      animes.remove(anime);
+      if (animes.size() === 0) {
+        stopAnime();
       }
     }
+
 
     /*
      * 动画对象默认值
@@ -632,18 +399,6 @@
         setNextPhase.call(this, this._current);
         setFrom.call(this, stop);
         this.update(this._endTime = now());
-        /*var data = {
-          current: this._from,
-          last: this._last,
-          currentPhase: this._current + 1,
-          totalPhase: this._to.length,
-          currentRepeat: (dir === Anime.Direction_Forward ? this._repeat : this._s.repeat - this._repeat) + 1,
-          totalRepeat: this._s.repeat,
-          dir: this._dir
-        };
-        this.emit('update', data);
-        this.emit('phaseComplete', data);
-        this.emit('complete', data);*/
       }
 
       // 从动画队列中移除
@@ -751,14 +506,14 @@
 
       this._end.easing = {};
 
-      if (type === 'object') {
+      if (type === 'object' && easing !== null) {
         for (var prop in stop.to) {
           var easing2 = easing[prop];
           this._end.easing[prop] = typeof easing2 === 'function' ?
             easing2 : Easing[normalizeEasingName(easing2)] || s.easing[prop] || s.easingFn;
         }
       }
-      else if (type === 'string' || type === 'function' || type === 'undefined') {
+      else {
         for (var prop in stop.to) {
           this._end.easing[prop] = type === 'function' ?
             easing : Easing[normalizeEasingName(easing)] || s.easing[prop] || s.easingFn;
@@ -841,13 +596,8 @@
     }
 
     function calc (p, b, e, easingFn, interpolationFn) {
-      if (e instanceof Array) {
-        var ip = interpolationFn(p, [b].concat(e));
-        p = ip.p;
-        b = ip.b;
-        e = ip.e;
-      }
-      return easingFn(p) * (e - b) + b;
+      p = easingFn(p);
+      return e instanceof Array ? interpolationFn(p, [b].concat(e)) : p * (e - b) + b;
     }
 
     /**
@@ -885,10 +635,10 @@
   }
 
   function requestAnimationFrame (fn) {
-    requestAnimationFrame = window.requestAnimationFrame || 
+    requestAnimationFrame = /*window.requestAnimationFrame || 
                              window.webkitRequestAnimationFrame ||
                              window.mozRequestAnimationFrame ||
-                             window.msRequestAnimationFrame ||
+                             window.msRequestAnimationFrame ||*/
                              function (fn) {
                                 return setTimeout(fn, 1000/60);
                              };
@@ -897,10 +647,10 @@
   }
 
   function cancelAnimationFrame (id) {
-    cancelAnimationFrame = window.cancelAnimationFrame ||
+    cancelAnimationFrame = /*window.cancelAnimationFrame ||
                             window.webkitCancelAnimationFrame ||
                             window.mozCancelAnimationFrame ||
-                            window.msCancelAnimationFrame ||
+                            window.msCancelAnimationFrame ||*/
                             window.clearTimeout;
 
     cancelAnimationFrame(id);

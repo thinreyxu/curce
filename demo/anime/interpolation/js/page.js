@@ -2,7 +2,7 @@ require.config({
   baseUrl: '../../../src/'
 });
 
-require(['anime'], function (Anime) {
+require(['anime/anime', 'anime/easing'], function (Anime) {
 
   var canvas = document.getElementById('canvas'),
       W = canvas.width,
@@ -22,23 +22,20 @@ require(['anime'], function (Anime) {
 
   var duration = 1000;
 
-  var o = { x: center.x + rh, y: center.y },
-      stop = { x: [center.x, center.x - rh],
-              y: [center.y - rv, center.y] };
-
-  var tween1 = Anime(o)
-        .to(stop)
-        .easing({ x: 'circInOut', y: 'linear' })
-        .duration(duration * 2)
+  var tween1 = Anime({ x: center.x + rh, y: center.y })
+        .to({ x: center.x, y: center.y - rv })
+        .to({ x: center.x - rh, y: center.y })
+        .easing({ x: 'cubicInOut', y: 'linear' })
+        .duration(duration)
         .memo()
         .onStart(onStart)
         .onUpdate(onUpdate);
 
   var tween2 = Anime({ x: center.x + rh, y: center.y })
-        .to({x: center.x, y: center.y - rv}, duration, { x: 'circIn' })
-        .to({x: center.x - rh, y: center.y}, duration, { x: 'circOut' })
-        .to({x: center.x, y: center.y + rv}, duration, { x: 'circIn' })
-        .to({x: center.x + rh, y: center.y}, duration, { x: 'circOut' })
+        .to({x: [center.x, center.x - rh], y: [center.y - rv, center.y]}, duration * 2, { x: 'circInOut' })
+        // .to({x: center.x - rh, y: center.y}, duration, { x: 'circOut' })
+        .to({x: [center.x, center.x + rh], y: [center.y + rv, center.y]}, duration * 2, { x: 'circInOut' })
+        // .to({x: center.x + rh, y: center.y}, duration, { x: 'circOut' })
         .memo()
         .onStart(onStart)
         .onUpdate(onUpdate);

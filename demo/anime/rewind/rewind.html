@@ -6,11 +6,18 @@
   <link rel="stylesheet" href="css/page.css">
 </head>
 <body>
-  <button id='play'>Play</button>
-  <button id='rewind'>Rewind</button>
-  <button id="stop">Stop</button>
-  <div class="container">
-    <div id="box" class="box">box</div>
+  <div id="container" class="container">
+    <button id='play'>Play</button>
+    <button id='rewind'>Rewind</button>
+    <button id="stop">Stop</button>
+    <div class="canvas">
+      <div class="box"></div>
+      <div class="box"></div>
+      <div class="box"></div>
+      <div class="box"></div>
+      <div class="box"></div>
+      <canvas id="canvas" width="600" height="600"></canvas>
+    </div>
   </div>
   <script data-main="js/page.js" src="http://requirejs.org/docs/release/2.1.8/minified/require.js"></script>
 </body>

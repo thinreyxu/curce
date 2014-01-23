@@ -15,12 +15,12 @@ require(['inherit'], function (inherit) {
 
 
   function Worker (name, age, job) {
-    this.super(name, age);
+    this._super(name, age);
     this.job = job;
   }
 
   Worker.prototype.say = function () {
-    this.super();
+    this._super();
     console.log('My job is %s.', this.job);
   };
 

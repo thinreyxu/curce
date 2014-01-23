@@ -7,7 +7,7 @@ require(['eventemitter', 'inherit'], function (EventEmitter, inherit) {
   var Container = (function () {
 
     function Container () {
-      this.super();
+      this._super();
     }
 
     Container.prototype.add = function (child) {
@@ -37,11 +37,11 @@ require(['eventemitter', 'inherit'], function (EventEmitter, inherit) {
   container.remove({id: '9i3n8heb' });
 
 
-  function onChildAdd (ev) {
-    console.log('Child added: %o', ev.data);
+  function onChildAdd (ev, data) {
+    console.log('Child added from:\t%s,\tthe child: %o', ev.data && ev.data.from, data.child.id);
   }
 
-  function onChildRemove (ev) {
-    console.log('Child removed: %o', ev.data);
+  function onChildRemove (ev, data) {
+    console.log('Child removed from:\t%s,\tthe child: data: %o', ev.data && ev.data.from, data.child.id);
   }
 });

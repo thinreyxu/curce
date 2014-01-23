@@ -4,7 +4,7 @@
  */
 
 (function (_exports) {
-  if (window.define && define.amd) {
+  if (typeof define !== 'undefined' && define.amd) {
     define(init);
   }
   else {
@@ -27,11 +27,11 @@
       // 创建子类
       function SubClass () {
         // 继承父级的属性
-        this.super = function () {
+        this._super = function () {
           SuperClass.apply(this, arguments);
         };
         // 执行子类的实际构造方法
-        if (constructor) {
+        if (typeof constructor === 'function') {
           constructor.apply(this, arguments);
         }
       }
@@ -49,15 +49,15 @@
         // 处理方法体中调用父类同名方法的重载的方法
         if (typeof method === 'function' &&
           typeof superProto[name] === 'function' &&
-          /this\.super/.test(method))
+          /this\._super/.test(method))
         {
 
           (function (name, method) {
             SubClass.prototype[name] = function () {
-              var _super = this.super;
-              this.super = superProto[name];
+              var _super = this._super;
+              this._super = superProto[name];
               var ret = method.apply(this, arguments)
-              this.super = _super;
+              this._super = _super;
               return ret;
             };
           })(name, method);

@@ -1,11 +1,28 @@
 body {
-  font-family: Helvetica, Arial,'Microsoft Yahei','Wenquanyi Micro Hei','Hiragino Sans GB', STXihei,SimSun,sans-serif;
+  font-family: Helvetica, Arial, Microsoft Yahei, Wenquanyi Micro Hei,Hiragino Sans GB, STXihei,SimSun,sans-serif;
+  background: #f2f2f2;
+}
+.container {
+  position: relative;
+  width: 600px; height: 600px;
+  margin: 0 auto;
 }
 .box {
-  width: 200px;
-  height: 200px;
+  width: 50px;
+  height: 50px;
   position: absolute;
   left: 0;
   top: 0;
-  background: blue;
+  text-align: center;
+  border-radius: 50%;
+  border: solid 2px #8C93A8;
+  background: #D5DBE3;
+  color: #fff;
+  font-size: 10px;
+}
+.box:after {
+  content: '';
+  display: inline-block;
+  width: 0; height: 100%;
+  vertical-align: middle;
 }
