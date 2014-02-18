@@ -22,14 +22,16 @@
 
           var name = names[i];
 
-          if (name in source) {
+          if (source.hasOwnProperty(name)) {
             target[name] = source[name];
           }
         }
       }
       else {
         for (var name in source) {
-          target[name] = source[name];
+          if (source.hasOwnProperty(name)) {
+            target[name] = source[name];
+          }
         }
       }
       return target;

@@ -13,17 +13,26 @@
       this._children = [];
     }
 
-    Collection.prototype.add = function (item) {
-      var index = this.indexOf(item);
-      if (index === -1) {
-        this._children.push(item);
+    Collection.prototype.add = function () {
+      for (var i = 0; i < arguments.length; i++) {
+        if (arguments[i] instanceof Array) {
+          for (var j = 0; j < arguments[j].length; j++) {
+            if (this.indexOf(arguments[i][j]) === -1) {
+              this._children.push(arguments[i][j]);
+            }
+          }
+        }
+        else {
+          if (this.indexOf(arguments[i])) {
+            this._children.push(arguments[i]);
+          }
+        }
       }
     };
 
     Collection.prototype.removeByIndex = function (index) {
-      if (index >= 0 && index < this._children.length) {
+      if (index >= 0 && index < this._children.length)
         this._children.splice(index, 1);
-      }
     };
 
     Collection.prototype.remove = function (item) {
