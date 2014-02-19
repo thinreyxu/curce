@@ -1,0 +1,6 @@
+a:after {
+  content: " ("attr(href)")";
+  display: inline;
+  color: #999;
+  font-size: 0.85em;
+}
