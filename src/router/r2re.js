@@ -40,7 +40,10 @@
       var route = { str: str };
 
       next.call(this, this.processors, 0, route, function (route) {
-        route.re = new RegExp('^' + route.str + '$');
+        if (!(route.str instanceof RegExp))
+          route.re = new RegExp('^' + route.str + '$');
+        else
+          route.re = route.str;
       })();
 
       return route.re;
@@ -48,8 +51,8 @@
 
     function next (collection, i, params, callback) {
       var self = this;
-      return function () {
-        if (i < collection.length) {
+      return function _next (forward) {
+        if (forward !== false && i < collection.length) {
           collection[i](params, next.call(self, collection, i + 1, params, callback));
         }
         else {
@@ -68,20 +71,45 @@
     };
 
     R2RE.addProcessor('regexp', function (route, next) {
-      var escapeRegExp = /[\^()\[\]{}?+=\-,.$|\\\/]/g;
-      route.str = route.str.replace(escapeRegExp, '\\$&');
+      if (route.str instanceof RegExp) {
+        var str = route.str.toString().replace(/^\/\^?|\$?\/$/g, '').replace(/\\/g, '\\');
+        route.str = new RegExp('^' + str + '$');
+        next(false);
+      }
+      else {
+        next();
+      }
+    });
+
+    R2RE.addProcessor('escapeRegExp', function (route, next) {
+      if (typeof route.str === 'string') {
+        var escapeRegExp = /[\^()\[\]{}?+=\-,.$|\\\/]/g;
+        route.str = route.str.replace(escapeRegExp, '\\$&');
+      }
       next();
     });
 
-    R2RE.addProcessor('name', function (route, next) {
-      var namedParam = /:\w+/g;
-      route.str = route.str.replace(namedParam, '(\\w+)');
+    R2RE.addProcessor('namedParam', function (route, next) {
+      if (typeof route.str === 'string') {
+        var namedParam = /:\w+/g;
+        route.str = route.str.replace(namedParam, '(\\w+)');
+      }
       next();
     });
 
-    R2RE.addProcessor('splat', function (route, next) {
-      var splatParam = /\*\w+/g;
-      route.str = route.str.replace(splatParam, '([\\w\\/]*)');
+    R2RE.addProcessor('splatParam', function (route, next) {
+      if (typeof route.str === 'string') {
+        var splatParam = /\*\w+/g;
+        route.str = route.str.replace(splatParam, '([\\w\\/]*)');
+      }
+      next();
+    });
+
+    R2RE.addProcessor('wildcard', function (route, next) {
+      if (typeof route.str === 'string') {
+        var wildcard = /^\*$/;
+        route.str = route.str.replace(wildcard, '.*');
+      }
       next();
     });
 
