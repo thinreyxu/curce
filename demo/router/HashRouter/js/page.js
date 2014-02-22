@@ -4,6 +4,14 @@ require.config({
 
 require(['router/HashRouter'], function (HashRouter) {
 
+  console = typeof console !== 'undefined' ? console : {};
+  var consoleMethods = ['log'];
+  for (var i = 0; i < consoleMethods.length; i++) {
+    console[consoleMethods] = function () {
+      alert(Array.prototype.slice.call(arguments).toString());
+    };
+  }
+
   var router = new HashRouter({
     silence: false,
     root: 'host/'
@@ -50,10 +58,10 @@ require(['router/HashRouter'], function (HashRouter) {
     ev = ev || window.event;
     var target = ev.target || ev.srcElement;
 
-    router.navigate(target.getAttribute('href'));
+    router.navigate(target.getAttribute('href').replace(/^\w+\:\/\//, '/'));
 
     if (ev.preventDefault) ev.preventDefault();
-    else if (returnValue in ev) ev.returnValue = false;
+    else if ('returnValue' in ev) ev.returnValue = false;
     return false;
   }
 

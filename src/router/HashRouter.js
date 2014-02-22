@@ -36,15 +36,17 @@
     };
 
     Router.prototype.start = function () {
-      if (!this._started) {
-        // 注册事件
-        var self = this;
-        window.onhashchange = function () {
-          route.call(self);
-        };
-        
-        route.call(this, this.s.silence);
+      if (this._started) {
+        return;
       }
+
+      // 注册事件
+      var self = this;
+      onHashChange(function () {
+        route.call(self);
+      });
+      
+      route.call(this, this.s.silence);
     };
 
     Router.prototype.route = function (route, callback) {
@@ -58,6 +60,15 @@
     Router.prototype.navigate = function (fragment) {
       setFragment(fragment, this.s.root);
     };
+
+    function onHashChange (callback) {
+      if ('onhashchange' in window) {
+        window.onhashchange = callback;
+      }
+      else {
+        this._timer = setInterval(callback, 50);
+      }
+    }
 
     function route (silence) {
       // 1. 检查 hash 合法
@@ -81,7 +92,7 @@
       }
       return true;
     }
-
+    
     function loadFragment (fragment, silence) {
       fragment = fragment || getFragment(this.s.root);
       this._lastFragment = fragment;
