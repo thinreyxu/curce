@@ -7,7 +7,7 @@ require(['router/HashRouter'], function (HashRouter) {
   console = typeof console !== 'undefined' ? console : {};
   var consoleMethods = ['log'];
   for (var i = 0; i < consoleMethods.length; i++) {
-    console[consoleMethods] = function () {
+    console[consoleMethods] = console[consoleMethods] || function () {
       alert(Array.prototype.slice.call(arguments).toString());
     };
   }
