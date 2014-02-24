@@ -23,6 +23,10 @@
         instanceMethods = constructor;
         constructor = undefined;
       }
+      else if (arguments.length === 2 && typeof constructor === 'function') {
+        classMethods = constructor;
+        instanceMethods = constructor.prototype;
+      }
 
       // 创建子类
       function SubClass () {
