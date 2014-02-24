@@ -23,6 +23,7 @@
     // @override
     StateRouter.prototype.navigate = function (fragment) {
       this._super(fragment);
+      // 由于没有监视 history state 的事件，所以在设置 fragment 后，仍需手动路由
       this._route();
     };
 
