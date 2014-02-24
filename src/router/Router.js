@@ -44,10 +44,10 @@
       // 注册事件
       var self = this;
       this._onFragmentChange(function () {
-        route.call(self);
+        self._route();
       });
       
-      route.call(this, this.s.silence);
+      this._route(this.s.silence);
     };
 
     Router.prototype.route = function (route, callback) {
@@ -75,7 +75,7 @@
       this.on('urichange', callback);
     };
 
-    function route (silence) {
+    Router.prototype._route = function (silence) {
       // 1. 检查 fragment(hash) 合法
       var isFragmentValid = checkFragment.call(this);
       if (isFragmentValid) {
@@ -86,7 +86,7 @@
           loadFragment.apply(this, [, silence]);
         }
       }
-    }
+    };
 
     function checkFragment () {
       var initial = (this.s.fragmentPrefix + this.s.root).replace(/\/$/, '');
