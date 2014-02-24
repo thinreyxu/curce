@@ -21,13 +21,6 @@
     };
 
     // @override
-    StateRouter.prototype.navigate = function (fragment) {
-      this._super(fragment);
-      // 由于没有监视 history state 的事件，所以在设置 fragment 后，仍需手动路由
-      this._route();
-    };
-
-    // @override
     StateRouter.prototype._setFragment = function (fragment) {
       history.pushState({}, '', fragment);
     };
@@ -39,13 +32,10 @@
 
     // @override
     StateRouter.prototype._onFragmentChange = function (callback) {
-      var self = this;
       if ('onpopstate' in window) {
         window.onpopstate = callback;
       }
-      else {
-        this._timer = setInterval(callback, 1000 / this.s.timerResolution);
-      }
+      this._timer = setInterval(callback, 1000 / this.s.timerResolution);
     };
 
     StateRouter = inherit(Router, StateRouter);

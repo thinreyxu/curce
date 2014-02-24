@@ -32,7 +32,6 @@
 
     // @override
     HashRouter.prototype._onFragmentChange = function (callback) {
-      var self = this;
       if ('onhashchange' in window) {
         window.onhashchange = callback;
       }
