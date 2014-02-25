@@ -21,22 +21,23 @@
     };
 
     // @override
-    StateRouter.prototype._setFragment = function (fragment) {
-      history.pushState({}, '', fragment);
+    StateRouter.prototype._setURI = function (URI) {
+      history.pushState({}, '', URI);
     };
 
     // @override
-    StateRouter.prototype._getFragment = function () {
-      return location.pathname;
+    StateRouter.prototype._getURI = function () {
+      return location.pathname + location.search + location.hash;
     };
 
     // @override
-    StateRouter.prototype._onFragmentChange = function (callback) {
-      if ('onpopstate' in window) {
-        window.onpopstate = callback;
-      }
-      this._timer = setInterval(callback, 1000 / this.s.timerResolution);
-    };
+    // StateRouter.prototype._onFragmentChange = function (callback) {
+    //   // 使用 timer 来监视 history state，则无需监听 onpopstate
+    //   // if ('onpopstate' in window) {
+    //   //   window.onpopstate = callback;
+    //   // }
+    //   this._super(callback);
+    // };
 
     StateRouter = inherit(Router, StateRouter);
 

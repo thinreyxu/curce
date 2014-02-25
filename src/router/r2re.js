@@ -100,7 +100,7 @@
     R2RE.addProcessor('splatParam', function (route, next) {
       if (typeof route.str === 'string') {
         var splatParam = /\*\w+/g;
-        route.str = route.str.replace(splatParam, '([\\w\\/]*)');
+        route.str = route.str.replace(splatParam, '([\\w\\/=?&#]*?)');
       }
       next();
     });

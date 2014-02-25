@@ -58,7 +58,11 @@ require(['router/StateRouter'], function (HashRouter) {
     ev = ev || window.event;
     var target = ev.target || ev.srcElement;
 
-    router.navigate(target.getAttribute('href').replace(/^\w+\:\/\//, '/'));
+    // 修复 IE67 的 bug，IE67 下获取 href 会得到绝对地址
+    // 所以调用 getAttribute() 时，传入第二个参数
+    // 具体见：http://oldj.net/article/js-href-url-encode-ie6/
+    // http://msdn.microsoft.com/en-us/library/ie/ms536429(v=vs.85).aspx
+    router.navigate(target.getAttribute('href', 2));
 
     if (ev.preventDefault) ev.preventDefault();
     else if ('returnValue' in ev) ev.returnValue = false;

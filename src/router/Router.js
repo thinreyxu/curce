@@ -30,7 +30,7 @@
     Router.prototype.init = function (op) {
       this._started = false;
       this._routes = [];
-      this._lastFragment = '';
+      this._lastURI = null;
       this.s = extend({}, this.constructor.defaults, op);
 
       this.s.root = ('/' + this.s.root + '/').replace(/\/+/g, '/');
@@ -44,10 +44,12 @@
       // 注册事件
       var self = this;
       this._onFragmentChange(function () {
-        self._route();
+        route.call(self);
       });
       
-      this._route(this.s.silence);
+      if (!this.s.silence) {
+        route.call(this);
+      }
     };
 
     Router.prototype.route = function (route, callback) {
@@ -62,87 +64,103 @@
       setFragment.call(this, fragment);
     };
 
-    Router.prototype._setFragment = function (fragment) {
-      this.constructor._curentURI = fragment;
-      this.emit('urichange', { fragment: fragment });
+    Router.prototype._setURI = function (URI) {
+      // 使用 Router._currentURI 作为中介，模拟地址栏的变化
+      this.constructor._currentURI = URI;
     };
 
-    Router.prototype._getFragment = function () {
-      return this.constructor._curentURI;
+    Router.prototype._getURI = function () {
+      return this.constructor._currentURI || '';
     };
 
     Router.prototype._onFragmentChange = function (callback) {
-      this.on('urichange', callback);
-    };
-
-    Router.prototype._route = function (silence) {
-      // 1. 检查 fragment(hash) 合法
-      var isFragmentValid = checkFragment.call(this);
-      if (isFragmentValid) {
-        // 2. 获取 fragment
-        var fragment = getFragment.call(this);
-        // 3. 加载 fragment
-        if (fragment !== this._lastFragment) {
-          loadFragment.apply(this, [, silence]);
+      var self = this;
+      this._timer = setInterval(/*function () {
+        var currentURI = self._getURI();
+        if (currentURI !== self._lastURI) {
+          callback();
+          self._lastURI = currentURI;
         }
-      }
+      }*/callback, 1000 / this.s.timerResolution);
     };
 
-    function checkFragment () {
+    function route () {
+      var URI = this._getURI();
+      // 1. 检查 URI 合法 且 fragment 发生变化
+      if (isURIValid.call(this, URI) && isURIChanged.call(this, URI)) {
+        // 2. 设置当前 URI
+        this._lastURI = URI;
+        // 3. 加载 fragment
+        loadFragment.call(this, getFragment.call(this, URI));
+      }
+    }
+
+    function isURIChanged (URI) {
+      URI = URI || this._getURI();
+      return URI !== this._lastURI;
+    }
+
+    function isURIValid (URI) {
       var initial = (this.s.fragmentPrefix + this.s.root).replace(/\/$/, '');
-      var fragment = this._getFragment();
-      if (fragment && fragment.indexOf(initial) !== 0) {
-        this.emit('error', { fragment: fragment, code: 404 });
+      URI = URI || this._getURI();
+      // 不合法
+      if (URI && URI.indexOf(initial) !== 0) {
+        this.emit('error', { URI: URI, fragment: '', code: 404 });
         return false;
       }
       return true;
     }
     
-    function loadFragment (fragment, silence) {
+    function loadFragment (fragment) {
       fragment = fragment || getFragment.call(this);
-      this._lastFragment = fragment;
-      if (!silence) {
-        var routed = false;
-        for (var i = 0; i < this._routes.length; i++) {
-          var ro = this._routes[i];  // ro = route object
-          if (ro.regexp.test(fragment)) {
-            routed = true;
-            var params = extractParams(fragment, ro.regexp);
-            var ret = ro.callback.apply(this, params);
-            this.emit('route', {
-              fragment: fragment,
-              route: ro.route,
-              callback: ro.callback,
-              params: params
-            });
-            if (ret === false) break;
-          }
+      var routed = false;
+      for (var i = 0; i < this._routes.length; i++) {
+        var ro = this._routes[i];  // ro = route object
+        if (ro.regexp.test(fragment)) {
+          routed = true;
+          var params = extractParams(fragment, ro.regexp);
+          var ret = ro.callback.apply(this, params);
+          this.emit('route', {
+            URI: makeURI.call(this, fragment),
+            fragment: fragment,
+            route: ro.route,
+            callback: ro.callback,
+            params: params
+          });
+          // 如果路由回调返回false，则不继续执行其他路由
+          if (ret === false) break;
         }
-        // 处理 404 错误
-        if (routed === false) {
-          this.emit('error', { fragment: fragment, code: 404 });
-        }
+      }
+      // 处理 404 错误
+      if (routed === false) {
+        this.emit('error', {
+          URI: makeURI.call(this, fragment),
+          fragment: fragment,
+          code: 404
+        });
       }
     }
 
+    function makeURI (fragment) {
+      return (this.s.fragmentPrefix + this.s.root + fragment).replace(/\/{2,}/g, '/');
+    }
+
     function setFragment (fragment) {
-      if (fragment.indexOf(this.s.root) !== 0) {
-        fragment = this.s.root + fragment;
+      var URI = makeURI.call(this, fragment);
+
+      if (isURIChanged.call(this, URI)) {
+        this._setURI(URI);
       }
-      fragment = (this.s.fragmentPrefix + fragment).replace(/\/{2,}/g, '/');
-      this._setFragment(fragment);
     }
 
     function getFragment () {
       var initial = (this.s.fragmentPrefix + this.s.root).replace(/\/$/, '');
-      var fragment = this._getFragment() || initial;
-
-      fragment = fragment.replace(/\?.*$/, ''); //去掉 query string
-      fragment = fragment.replace(initial, ''); // 去掉开头的"#!/root"
+      var fragment = this._getURI();
+      // 去掉开头的"#!/root"
+      fragment = fragment.replace(initial, '');
       // 如果 hash 就是 "#!/root"，被替换掉开头后，没有‘/’，所以要添加一下，
       // 然而又要避免其他情况如 "#!/root/path" 下有‘/’从而添加‘/’后出现多个连续‘/’的情况
       fragment = ('/' + fragment).replace(/^\/{2,}/, '/');
-
       return fragment;
     }
 

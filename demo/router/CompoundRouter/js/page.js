@@ -2,8 +2,9 @@ require.config({
   baseUrl: '../../../src/'
 });
 
-require(['router/HashRouter'], function (HashRouter) {
+require(['router/CompoundRouter'], function (CompoundRouter) {
 
+  // patch console methods
   console = typeof console !== 'undefined' ? console : {};
   var consoleMethods = ['log'];
   for (var i = 0; i < consoleMethods.length; i++) {
@@ -12,9 +13,9 @@ require(['router/HashRouter'], function (HashRouter) {
     };
   }
 
-  var router = new HashRouter({
+  var router = CompoundRouter.create({
     silence: false,
-    root: 'host/'
+    root: '/curce/demo/router/CompoundRouter/'
   });
 
   router.route('/', function () {

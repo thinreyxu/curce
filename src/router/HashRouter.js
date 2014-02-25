@@ -21,13 +21,13 @@
     };
 
     // @override
-    HashRouter.prototype._setFragment = function (fragment) {
-      location.hash = fragment;
+    HashRouter.prototype._setURI = function (URI) {
+      location.hash = URI;
     };
 
     // @override
-    HashRouter.prototype._getFragment = function () {
-      return location.hash;
+    HashRouter.prototype._getURI = function () {
+      return location.hash || (this.s.fragmentPrefix + this.s.root);
     };
 
     // @override
@@ -36,7 +36,7 @@
         window.onhashchange = callback;
       }
       else {
-        this._timer = setInterval(callback, 1000 / this.s.timerResolution);
+        this._super(callback);
       }
     };
 
