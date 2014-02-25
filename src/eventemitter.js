@@ -50,7 +50,7 @@
 
     EventEmitter.extend = function (o, events) {
 
-      if (typeof evetns === 'string') {
+      if (typeof events === 'string') {
         events = [events];
       }
       for (var i = 0; i < events.length; i++) {
