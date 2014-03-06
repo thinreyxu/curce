@@ -1,13 +1,13 @@
 (function (_exports) {
   if (window.define) {
-    define(['object', 'array'], init);
+    define(init);
   }
   else {
     _exports = _exports.curce || (_exports.curce = {});
-    _exports.QueryString = init(_exports.object, _exports.array);
+    _exports.QueryString = init();
   }
 
-  function init (object, array) {
+  function init () {
     var QueryString = function () {};
 
     // 序列化 QueryString 对象
@@ -31,15 +31,15 @@
       encode = encode === undefined ? false : encode;
 
       // query 为 QueryString 数组
-      if (object.isOfType(query, 'Array')) {
-        array.forEach(query, function (item, index) {
+      if (query instanceof Array) {
+        for (var i = 0; i < query.length; i += 2) {
           if (encode) {
-            result.push(encodeURIComponent(item[0]) + sep2 + encodeURIComponent(item[1]));
+            result.push(encodeURIComponent(query[i]) + sep2 + encodeURIComponent(query[i + 1]));
           }
           else {
-            result.push(item[0] + sep2 + item[1]);
+            result.push(query[i] + sep2 + query[i + 1]);
           }
-        })
+        }
       }
       // query 为 QueryString 对象
       else {
@@ -56,7 +56,7 @@
       }
 
       return result.join(sep1);
-    };
+    }
 
     // 构建 QueryString 对象
     QueryString.parse = parse;
@@ -66,7 +66,7 @@
         result[key] = value;
       });
       return result;
-    };
+    }
 
     // 构建 QueryString 数组
     // Note：plain object 遍历是按书写顺序输出的，
@@ -75,13 +75,13 @@
     function parseAsArray (str, sep1, sep2, decode) {
       var result = [];
       parser(str, sep1, sep2, decode, function (key, value) {
-        result.push([key, value]);
+        result.push(key);
+        result.push(value);
       });
       return result;
     }
 
     function parser (str, sep1, sep2, decode, callback) {
-      var tmp1, index;
 
       switch ('boolean') {
         case typeof sep1:
@@ -98,14 +98,14 @@
       sep2 = sep2 || '=';
       decode = decode === undefined ? false : decode;
 
-      tmp1 = str.split(sep1);
-      for (var i = 0; i < tmp1.length; i++) {
-        index = tmp1[i].indexOf(sep2);
+      var params = str.split(sep1);
+      for (var i = 0; i < params.length; i++) {
+        var index = params[i].indexOf(sep2);
         if (decode) {
-          callback(decodeURIComponent(tmp1[i].substring(0, index)), decodeURIComponent(tmp1[i].substring(index + 1)));
+          callback(decodeURIComponent(params[i].substring(0, index)), decodeURIComponent(params[i].substring(index + sep2.length)));
         }
         else {
-          callback(tmp1[i].substring(0, index), tmp1[i].substring(index + 1));
+          callback(params[i].substring(0, index), params[i].substring(index + sep2.length));
         }
       }
     }

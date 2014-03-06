@@ -117,40 +117,45 @@
 
       // 结果监听
       if ('onload' in xhr && 'onerror' in xhr) {
-        xhr.onload = load;
-        xhr.onerror = error;
+        // ie 的 xdr 也会使用 onload 和 onerror
+        xhr.onload = onLoad;
+        xhr.onerror = onError;
       }
       else {
         xhr.onreadystatechange = function () {
           if (xhr.readyState === 4) {
-            load();
+            onLoad();
           }
-        }
+        };
       }
 
       // 完成处理
-      function load () {
-        complete = true;
-        timer && clearTimeout(timer);
-        if (xhr.status >=200 && xhr.status < 300 || xhr.status === 304
-          || cors && xhr instanceof XDomainRequest) {
+      function onLoad () {
+        onComplete();
+        if (xhr.status >=200 && xhr.status < 300 || xhr.status === 304)
+        {
           s.success && s.success.call(s.context, xhr.responseText, xhr);
         }
         else {
           s.error && s.error.call(s.context, new Error('error'), xhr);
         }
       }
-      function error () {
+      function onError () {
+        onComplete();
         s.error && s.error.call(s.context, new Error('error'), xhr);
+      }
+      function onComplete () {
+        complete = true;
+        timer && clearTimeout(timer);
       }
 
       // 取消处理
       function abort (message) {
         if (!complete && !aborted) {
-          message = message || 'abort';
-          timer && clearTimeout(timer);
-          xhr.abort();
+          onComplete();
           aborted = true;
+          message = message || 'abort';
+          xhr.abort();
           s.error && s.error.call(s.context, new Error(message), xhr);
         }
         return this;

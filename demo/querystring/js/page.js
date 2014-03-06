@@ -8,7 +8,7 @@ require(['querystring'], function (qs) {
     age: 30,
     gender: 'male',
     string: '=%^<>{}:;'
-  }
+  };
   console.log(query);
   console.log(qs.stringify(query));
   console.log(qs.stringify(query, true));
@@ -18,17 +18,17 @@ require(['querystring'], function (qs) {
 
   console.group('queryArray');
   var queryArray = [
-    ['name', 'thinrey.xu'],
-    ['age', 30],
-    ['gender', 'male'],
-    ['string', '=%^<>{}:;']
+    'name', 'thinrey.xu',
+    'age', 30,
+    'gender', 'male',
+    'string', '=%^<>{}:;'
   ];
   console.log(queryArray);
   console.log(qs.stringify(queryArray));
   console.groupEnd();
 
   console.group('parse');
-  var querystring = 'name: thinrey.xu, age: 30, gender: male, string: =%^<>{}:;'
+  var querystring = 'name: thinrey.xu, age: 30, gender: male, string: =%^<>{}:;';
   console.log(querystring);
   console.log(qs.parse(querystring, ', ', ': '));
   console.log(qs.parseAsArray(querystring, ', ', ': '));
