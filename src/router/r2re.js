@@ -91,16 +91,16 @@
 
     R2RE.addProcessor('namedParam', function (route, next) {
       if (typeof route.str === 'string') {
-        var namedParam = /:\w+/g;
-        route.str = route.str.replace(namedParam, '(\\w+)');
+        var namedParam = /:[\w\-]+/g;
+        route.str = route.str.replace(namedParam, '([\\w\\-]+)');
       }
       next();
     });
 
     R2RE.addProcessor('splatParam', function (route, next) {
       if (typeof route.str === 'string') {
-        var splatParam = /\*\w+/g;
-        route.str = route.str.replace(splatParam, '([\\w\\/=?&#]*?)');
+        var splatParam = /\*[\w\-]+/g;
+        route.str = route.str.replace(splatParam, '([\\w\\-\\/=?&#]*?)');
       }
       next();
     });
