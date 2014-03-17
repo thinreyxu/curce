@@ -18,37 +18,23 @@
     }
 
     EventEmitter.prototype.on = function (type, callback, data, context) {
-      return on.call(this, this._listeners, type, callback, data, context);
+      on.call(this, this._listeners, type, callback, data, context);
+      return this;
     };
 
     EventEmitter.prototype.off = function (type, callback) {
-      return off.call(this, this._listeners, type, callback);
+      off.call(this, this._listeners, type, callback);
+      return this;
     };
 
     EventEmitter.prototype.emit = function (type) {
       var data = Array.prototype.slice.call(arguments, 1);
-      return emit.apply(this, [this._listeners, type].concat(data));
+      console.log(data);
+      emit.apply(this, [this._listeners, type].concat(data));
+      return this;
     };
 
-    EventEmitter.create = function () {
-      var listeners = {};
-      
-      var ret = {};
-      ret.on = function (type, callback, data, context) {
-        return on.call(this, listeners, type, callback, data, context);
-      };
-      ret.off = function (type, callback) {
-        return off.call(this, listeners, type, callback);
-      };
-      ret.emit = function (type) {
-        var data = Array.prototype.slice.call(arguments, 1);
-        return emit.apply(this, [listeners, type].concat(data));
-      };
-
-      return ret;
-    };
-
-    EventEmitter.extend = function (o, events) {
+    EventEmitter.extendHandler = function (o, events) {
 
       if (typeof events === 'string') {
         events = [events];

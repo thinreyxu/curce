@@ -20,7 +20,7 @@ require(['eventemitter', 'inherit'], function (EventEmitter, inherit) {
 
     Container = inherit(EventEmitter, Container, Container.prototype);
 
-    EventEmitter.extend(Container.prototype, ['add', 'remove']);
+    EventEmitter.extendHandler(Container.prototype, ['add', 'remove']);
 
     return Container;
   })();
@@ -35,7 +35,6 @@ require(['eventemitter', 'inherit'], function (EventEmitter, inherit) {
 
   container.add({ id: '3nd02ndk' });
   container.remove({id: '9i3n8heb' });
-
 
   function onChildAdd (ev, data) {
     console.log('Child added from:\t%s,\tthe child: %o', ev.data && ev.data.from, data.child.id);

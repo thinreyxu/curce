@@ -6,9 +6,11 @@ require(['eventemitter', 'mixin'], function (EventEmitter, mixin) {
 
   var Container = (function () {
 
-    var em = EventEmitter.create();
+    var em = new EventEmitter();
 
-    function Container () { }
+    function Container () {
+      EventEmitter.call(this);
+    }
 
     Container.prototype.add = function (child) {
       this.emit('add', { child: child });
@@ -18,8 +20,8 @@ require(['eventemitter', 'mixin'], function (EventEmitter, mixin) {
       this.emit('remove', { child: child });
     };
 
-    mixin(Container.prototype, em);
-    EventEmitter.extend(Container.prototype, ['add', 'remove']);
+    mixin(Container.prototype, EventEmitter.prototype);
+    EventEmitter.extendHandler(Container.prototype, ['add', 'remove']);
     
     return Container;
   })();

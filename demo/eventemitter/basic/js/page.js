@@ -3,7 +3,7 @@ require.config({
 });
 
 require(['eventemitter'], function (EventEmitter) {
-  var em = EventEmitter.create();
+  var em = new EventEmitter();
 
   em.on('connection', onConnection, null, { name: 'contextFromOn'});
   em.on('data', onData, { registerTime: new Date().toLocaleString() });
@@ -26,7 +26,7 @@ require(['eventemitter'], function (EventEmitter) {
 
 
   function onConnection (ev, data) {
-    console.group('connection %s', data.id);
+    console.group('connection %s', data.user);
       console.log('Context', this);
       console.log('Type', ev.type);
       console.log('Data', ev.data);
@@ -34,15 +34,15 @@ require(['eventemitter'], function (EventEmitter) {
   }
 
   function onClose (ev, data) {
-    console.group('close %s', data.id);
+    console.group('close %s', data.user);
       console.log('Context', this);
       console.log('Type', ev.type);
       console.log('Data', ev.data);
     console.groupEnd();
   }
 
-  function onData (ev) {
-    console.group('data %s', ev.data.id);
+  function onData (ev, data) {
+    console.group('data %s', data.user);
       console.log('Context', this);
       console.log('Type', ev.type);
       console.log('Data', ev.data);
