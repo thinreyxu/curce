@@ -1,121 +1,118 @@
 (function (_exports) {
   if (window.define) {
-    define(['array'], init);
+    define(init);
   }
   else {
     _exports = _exports.curce || (_exports.curce = {});
-    _exports.classlist = init(_exports.array);
+    _exports.classlist = init();
   }
 
-  function init (array) {
-    var add, remove, toggle, contains
-      , methods;
+  function init () {
 
-    if (document && 'classList' in document.documentElement) {
-      // 添加空格分割的 class name
-      add = function add (el, classNames) {
-        var classList = split(classNames);
-        array.forEach(classList, function (className) {
-          el.classList.add(className);
-        });
-      };
+    var classListSupport = document.body.hasOwnProperty('classList');
 
-      // 移除空格分割的 class name
-      remove = function remove (el, classNames) {
-        var classList = split(classNames);
-        array.forEach(classList, function (className) {
-          el.classList.remove(className);
-        });
-      };
+    // 添加空格分割的 class name
+    var add = classListSupport ?
+    function add (el, classNames) {
+      [].forEach.call(split(classNames), function (className) {
+        el.classList.add(className);
+      });
+    } :
+    function add (el, classNames) {
+      var classList = split(classNames)
+        , elClassName = el.className
+        , elClassList = split(elClassName);
 
-      // 切换空格分割的 class name
-      toggle = function toggle (el, classNames) {
-        var result, classList = split(classNames);
-        array.forEachRight(classList, function (className) {
-          result = el.classList.toggle(classList[i]);
-        });
-        return result;
-      };
+      for (var i = 0; i < classList.length; i++)
+        if (elClassName.search(makeRE(classList[i])) === -1)
+          elClassList.push(classList[i]);
 
-      // 检测是否包含指定的 class name
-      contains = function contains (el, classNames) {
-        var result, classList = split(classNames);
-        array.forEachRight(classList, function (className) {
-          result = el.classList.contains(classList[i]);
-        });
-        return result;
-      };
-    }
-    else {
-      add = function add (el, classNames) {
-        var classList = split(classNames)
-          , elClassList = split(el.className);
+      el.className = elClassList.join(' ');
+    };
 
-        array.forEach(classList, function (className) {
-          if (array.indexOf(elClassList, className) === -1) {
-            elClassList.push(className);
-          }
-        });
-        el.className = elClassList.join(' ');
-      };
+    // 移除空格分割的 class name
+    var remove = classListSupport ?
+    function remove (el, classNames) {
+      [].forEach.call(split(classNames), function (className) {
+        el.classList.remove(className);
+      });
+    } :
+    function remove (el, classNames) {
+      var classList = split(classNames)
+        , elClassName = el.className
+        , elClassList = split(elClassName);
 
-      remove = function remove (el, classNames) {
-        var classList = split(classNames)
-          , elClassList = split(el.className)
-          , index;
+      for (var i = 0; i < classList.length; i++)
+        if (elClassName.search(makeRE(classList[i])) !== -1)
+          elClassList.splice(i--, 1);
 
-        array.forEach(classList, function (className) {
-          if ((index = array.indexOf(elClassList, className)) !== -1) {
-            elClassList.splice(index, 1);
-          }
-        });
-        el.className = elClassList.join(' ');
-      };
+      el.className = elClassList.join(' ');
+    };
 
-      toggle = function toggle (el, classNames) {
-        var classList = split(classNames)
-          , elClassList = split(el.className)
-          , index
-          , result;
+    // 切换空格分割的 class name
+    var toggle = classListSupport ?
+    function toggle (el, classNames) {
+      var result = [];
+      [].forEach.call(split(classNames), function (className) {
+        result.push(el.classList.toggle(className));
+      });
+      return result;
+    } :
+    function toggle (el, classNames) {
+      var classList = split(classNames)
+        , elClassName = el.className
+        , elClassList = split(elClassName)
+        , result = [];
 
-        array.forEachRight(classList, function (className) {
-          if ((index = array.indexOf(elClassList, className)) === -1) {
-            result = elClassList.push(className);
-          }
-          else {
-            result = elClassList.splice(index, 1);
-          }
-        });
-        el.className = elClassList.join(' ');
+      for (var i = 0; i < classList.length; i++) {
+        if (elClassName.search(makeRE(classList[i])) === -1) {
+          elClassList.push(classList[i]);
+          result.push(true);
+        }
+        else {
+          elClassList.splice(i--, 1);
+          result.push(false);
+        }
+      }
+      el.className = elClassList.join(' ');
 
-        return result;
-      };
+      return result;
+    };
 
-      contains = function contains (el, classNames) {
-        var classList = split(classNames)
-          , elClassList = split(el.className)
-          , result;
+    // 检测是否包含指定的 class name
+    var contains = classListSupport ?
+    function contains (el, classNames) {
+      var result = [];
+      [].forEach.call(split(classNames), function (className) {
+        result.push(el.classList.contains(className));
+      });
+      return result;
+    } :
+    function contains (el, classNames) {
+      var classList = split(classNames)
+        , elClassName = el.className
+        , result = [];
 
-        array.forEachRight(classList, function (className) {
-          result = (array.indexOf(elClassList, className) !== -1);
-        });
-        el.className = elClassList.join(' ');
+      for (var i = 0; i < classList.length; i++) {
+        result.push(elClassName.search(makeRE(classList[i])) !== -1);
+      }
 
-        return result;
-      };
-    }
+      return result;
+    };
+    
 
-    methods = [add, remove, toggle, contains];
+    var methods = [add, remove, toggle, contains];
 
     function split (classNames) {
       classNames = classNames.replace(/^\s+|\s+$/g, '').replace(/\s+/g, ' ');
       return classNames ? classNames.split(' ') : [];
     }
 
+    function makeRE (classname) {
+      return new RegExp('(?:^|\\s)' + classname + '(?:\\s|$)');
+    }
+
     function ClassList (el) {
-      if (el instanceof ClassList) {
-        return el;
-      }
       if (this instanceof ClassList === false) {
         return new ClassList(el);
       }
@@ -124,9 +121,11 @@
 
     for (var i = 0; i < methods.length; i++) {
       ClassList[methods[i].name] = methods[i];
-      ClassList.prototype[methods[i].name] = function () {
-        return methods[i].apply(this_wrapped, [this._wrapped].concat(arguments));
-      }
+      !function (i) {
+        ClassList.prototype[methods[i].name] = function () {
+          return methods[i].apply(this._wrapped, [this._wrapped].concat([].slice.call(arguments)));
+        }
+      }(i);
     }
 
     return ClassList;
