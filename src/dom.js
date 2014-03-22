@@ -8,11 +8,11 @@
   }
 
   function init (qs, extend) {
-    function Dom () {};
+    function DOM () {};
 
-    // Dom.contains()
+    // DOM.contains()
     if (document.compareDocumentPosition) {
-      Dom.contains = function (container, contained, equal) {
+      DOM.contains = function (container, contained, equal) {
         var result = container.compareDocumentPosition(contained);
         if (equal && result === 0 || (result & 16) === 16) {
           return true;
@@ -21,7 +21,7 @@
       }
     }
     else {
-      Dom.contains = function (container, contained, equal) {
+      DOM.contains = function (container, contained, equal) {
         contained = equal ? contained.parentNode : contained;
         while (contained) {
           if (contained === container) {
@@ -33,7 +33,7 @@
       }
     }
 
-    // Dom.style
+    // DOM.style
     // camelize
     function camelize (str) {
       return str.replace(/-([a-zA-Z])/g, function ($0, char) {
@@ -48,7 +48,7 @@
     // 1. setStyle(body, 'height', '200px')
     // 2. setStyle(body, {'height':'200px', 'width':'200px'})
     // 3. setStyle(body, 'height:200px;width:200px;')
-    Dom.setStyle = function (el, prop, value) {
+    DOM.setStyle = function (el, prop, value) {
       if (typeof prop === 'string') {
         if (prop.indexOf(':') === -1) {
           var props = {};
@@ -79,12 +79,12 @@
       }
     }
 
-    Dom.getStyle = function (el, prop) {
+    DOM.getStyle = function (el, prop) {
       var style = el.currentStyle || getComputedStyle(el, false);
       return prop ? style[prop] : style;
     };
 
-    Dom.getInlineStyle = function (el) {
+    DOM.getInlineStyle = function (el) {
       var cssText = el.style.cssText
         .replace(/^\s+|\s+$/g, '')  // 去除首位空格
         .replace(/;$/, '')  // 去除末尾‘;’
@@ -93,6 +93,6 @@
       return qs.parse(cssText, ';', ':');
     };
 
-    return Dom;
+    return DOM;
   }
 })(window);
