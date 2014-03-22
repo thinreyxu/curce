@@ -1,5 +1,17 @@
 #box {
-  width: 100px;
-  height: 100px;
+  width: 200px;
+  height: 200px;
   background: red;
+}
+
+#console {
+  background: #f2f2f2;
+  max-height: 300px;
+  font-family: monospace;
+  overflow: auto;
+}
+
+#console .line {
+  height: 20px;
+  line-height: 20px;
 }
