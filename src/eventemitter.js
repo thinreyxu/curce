@@ -29,7 +29,6 @@
 
     EventEmitter.prototype.emit = function (type) {
       var data = Array.prototype.slice.call(arguments, 1);
-      console.log(data);
       emit.apply(this, [this._listeners, type].concat(data));
       return this;
     };
