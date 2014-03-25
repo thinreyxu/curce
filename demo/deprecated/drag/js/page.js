@@ -1,7 +1,7 @@
 require.config({
-  baseUrl: '../../src'
+  baseUrl: '../../../src'
 });
-require(['drag', 'event', 'dom'], function (drag, event, dom) {
+require(['deprecated/drag', 'deprecated/event', 'dom'], function (drag, event, dom) {
 
   var desktopSupport = document.hasOwnProperty('onmouseover');
   var mobileSupport = document.hasOwnProperty('ontouchmove');

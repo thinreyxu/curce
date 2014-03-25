@@ -1,6 +1,6 @@
 (function (_exports) {
   if (window.define) {
-    define(['event', 'extend'], init);
+    define(['deprecated/event', 'extend'], init);
   }
   else {
     _exports = _exports.curce || (_exports.curce = {});
