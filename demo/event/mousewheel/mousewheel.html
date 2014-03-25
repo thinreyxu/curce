@@ -6,20 +6,6 @@
   <link rel="stylesheet" href="css/page.css">
 </head>
 <body>
-  <script>
-    document.addEventListener('DOMContentLoaded', function (ev) {
-      console.log('intro: DOMContentLoaded');
-      document.body.onmousewheel = function (ev) {
-        console.log('out: 1', ev);
-      };
-      document.body.addEventListener('mousewheel', function (ev) {
-        console.log('out: 2', ev);
-      }, false);
-      document.body.addEventListener('DOMMouseScroll', function (ev) {
-        console.log('out: 3', ev);
-      }, false);
-    }, false);
-  </script>
-  <script data-main="js/page" src="http://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.8/require.min.js"></script>
+  <script data-main="js/page.js" src="../../lib/requirejs/require.js"></script>
 </body>
 </html>

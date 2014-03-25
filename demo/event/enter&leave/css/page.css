@@ -8,6 +8,7 @@ h2 {
 #console {
   line-height: 2;
   font-family: monospace;
+  font-size: 12px;
   overflow: hidden;
   border: solid 1px #f2f2f2;
   width: 200px;

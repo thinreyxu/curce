@@ -2,10 +2,11 @@ require.config({
   baseUrl: '../../../src/'
 });
 
-require(['event'], function (event) {
-  var box1 = document.getElementById('box1')
-    , box2 = document.getElementById('box2')
-    , con = document.getElementById('console');
+require(['event/event'], function (event) {
+
+  var box1 = document.getElementById('box1'),
+      box2 = document.getElementById('box2'),
+      con = document.getElementById('console');
 
   event.on(box1, 'mouseenter', function (ev, data) {
     log('enter');

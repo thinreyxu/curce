@@ -2,14 +2,15 @@ require.config({
   baseUrl: '../../../src/'
 });
 
-require(['selector', 'event'], function (query, event) {
-  var list = query('.list');
-  event.on(list[0], 'mouseenter', 'li', function (ev) {
+require(['event/event'], function (event) {
+  var list = document.getElementById('list');
+  event.on(list, 'mouseenter', 'li', function (ev) {
     this.className = 'hover';
     console.log('mouse entered');
   });
-  event.on(list[0], 'mouseleave', 'li', function (ev) {
+  event.on(list, 'mouseleave', 'li', function (ev) {
     this.className = '';
     console.log('mouse left');
   });
+  event.emit(list.children[0].children[0], 'mouseenter');
 });
