@@ -60,7 +60,7 @@
             SubClass.prototype[name] = function () {
               var _super = this._super;
               this._super = superProto[name];
-              var ret = method.apply(this, arguments)
+              var ret = method.apply(this, arguments);
               this._super = _super;
               return ret;
             };
