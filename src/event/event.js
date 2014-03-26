@@ -84,13 +84,25 @@
     /**
      * [emit]
      * 触发事件
-     * 使用方法：event.emit(el, type[, data])
+     * 使用方法：
+     * 1. event.emit(el, type[, data])
+     * 2. event.emit(el, Event[, data])
      */
     event.emit = function emit (el, type, data) {
-      var ontype = 'on' + type;
-      var ev = createEvent(type);
-      ev.type = type;
+      var ev;
+      if (typeof type === 'object') {
+        // (el, Event[, data])
+        ev = type;
+        type = ev.type;
+      }
+      else {
+        // (el, type[, data]);
+        ev = createEvent(type);
+        ev.type = type;
+      }
+
       ev.target = el;
+      ev.delegateTarget = el;
 
       // 事件冒泡链
       var bubblePath = [el];
@@ -100,18 +112,16 @@
 
       // 沿着冒泡链分派事件
       var currentTarget;
+      var ontype = 'on' + type;
 
-      while (ev.bubbles && !ev.propagationStopped && (currentTarget = bubblePath.shift())) {
-
-        ev.delegateTarget = currentTarget;
-        ev.currentTarget = currentTarget;
+      while (ev.bubbles && !ev.propagationStopped && (ev.currentTarget = bubblePath.shift() || null)) {
 
         // 分派注册的事件
         dispatchEvent(ev, data);
 
         // 触发 0 级 DOM 事件
-        if (typeof currentTarget[ontype] === 'function') {
-          currentTarget[ontype](ev, data);
+        if (typeof ev.currentTarget[ontype] === 'function') {
+          ev.currentTarget[ontype](ev, data);
         }
       }
 
@@ -131,7 +141,7 @@
     /**
      * [one]
      * 执行一次的监听器
-     * 使用方法： ev.one(el, type[, selector][, data], handler[, context])
+     * 使用方法： event.one(el, type[, selector][, data], handler[, context])
      */
     event.one = function one (el, type, selector, data, handler, context) {
       if (typeof selector === 'function') {
@@ -159,6 +169,14 @@
       listener.times = 1;
       addEventListener(listener);
     };
+
+
+    /**
+     * [createEvent]
+     * 创建事件
+     * 使用方法：event.createEvent(type[, ev[, data]])
+     */
+    event.createEvent = createEvent;
 
     /**
      * [createEventListener]
@@ -283,8 +301,12 @@
      * [createEvent]
      * 创建事件
      */
-    function createEvent (type, ev, data) {
-      return DOMEvent.createEvent(type).initEvent(ev, data);
+    function createEvent (type, ev, initValues) {
+      initValues = initValues || {};
+      if (!ev || ev.type === undefined) initValues.type = initValues.type || type;
+      if (!ev || ev.bubbles === undefined) initValues.bubbles = initValues.bubbles || true;
+      if (!ev || ev.cancelable === undefined) initValues.cancelable = initValues.cancelable || true;
+      return DOMEvent.createEvent(type).initEvent(ev, initValues);
     }
 
     /**

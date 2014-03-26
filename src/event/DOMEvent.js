@@ -15,7 +15,7 @@
       this._constructor = _constructor;
     }
 
-    Event.prototype.initEvent = function (originalEvent, data) {
+    Event.prototype.initEvent = function (originalEvent, initValues) {
       if (originalEvent) {
         this.originalEvent = originalEvent;
       }
@@ -29,19 +29,29 @@
         name = ext.inheritance;
       }
 
-      while (ext = exts.shift()) {
+      while ((ext = exts.shift())) {
+        // 扩展常量
         if (ext.constants) {
-          for (var item in ext.constants) {
-            this.constructor[item] = ext.constants[item];
+          for (var c in ext.constants) {
+            this.constructor[c] = ext.constants[c];
           }
         }
+        // 扩展实例方法
         if (ext.methods) {
-          for (var item in ext.methods) {
-            this[item] = ext.methods[item];
+          for (var m in ext.methods) {
+            this[m] = ext.methods[m];
           }
         }
+        // 执行初始化
         if (ext.initEvent) {
-          ext.initEvent.call(this, originalEvent, data);
+          ext.initEvent.call(this, originalEvent);
+        }
+      }
+
+      // 填充初始值
+      if (initValues) {
+        for (var i in initValues) {
+          this[i] = initValues[i];
         }
       }
 
@@ -65,20 +75,21 @@
         AT_TARGET: 2,        // 在事件源
         BUBBLING_PHASE: 3    // 冒泡阶段
       },
-      initEvent: function (originalEvent, data) {
-        var e = originalEvent || {}, d = data || {};
+      initEvent: function (originalEvent) {
+        var e = originalEvent || {};
 
-        this.type = e.type || d.type || '';
-        this.target = e.target || e.srcElement || d.target || null;
-        this.currentTarget = e.currentTarget || d.currentTarget || null;
-        this.bubbles = e.bubbles || d.bubbles || false;
-        this.cancelable = e.cancelable || d.cancelable || false;
-        this.timeStamp = e.timeStamp || d.timeStamp || new Date().getTime();
-        this.defaultPrevented = e.defaultPrevented || d.defaultPrevented || false;
-        this.isTrusted = e.isTrusted || d.isTrusted || false;
+        this.type = e.type || '';
+        this.target = e.target || e.srcElement || null;
+        this.currentTarget = e.currentTarget || null;
+        this.bubbles = e.bubbles || false;
+        this.cancelable = e.cancelable || false;
+        this.timeStamp = e.timeStamp || new Date().getTime();
+        this.defaultPrevented = e.defaultPrevented || false;
+        this.isTrusted = e.isTrusted || false;
 
-        this.propagationStopped = d.propagationStopped || false;
-        this.immediatePropagationStopped = d.immediatePropagationStopped || false;
+        this.propagationStopped = false;
+        this.immediatePropagationStopped = false;
+
       },
       methods: {
         preventDefault: function () {
@@ -130,10 +141,14 @@
      */
     extensions.CustomEvent = {
       inheritance: 'Event',
-      initEvent: function (originalEvent, data) {
-        var e = originalEvent || {}, d = data || {};    
+      initEvent: function (originalEvent) {
+        var e = originalEvent || {};    
 
-        this.detail = d.detail || null;
+        for (var item in originalEvent) {
+          if (typeof originalEvent[item] !== 'function') {
+            this[item] = originalEvent[item];
+          }
+        }
       }
     };
 
@@ -147,14 +162,14 @@
         ADDITION: 2,
         REMOVAL: 3
       },
-      initEvent: function (originalEvent, data) {
-        var e = originalEvent || {}, d = data || {};
+      initEvent: function (originalEvent) {
+        var e = originalEvent || {};
 
-        this.relatedNode = e.relatedNode || d.relatedNode || null;
-        this.prevValue = e.prevValue || d.prevValue || '';
-        this.newValue = e.newValue || d.newValue || '';
-        this.attrName = e.attrName || d.attrName || '';
-        this.attrChange = e.attrChange || d.attrChange || 0;
+        this.relatedNode = e.relatedNode || null;
+        this.prevValue = e.prevValue || '';
+        this.newValue = e.newValue || '';
+        this.attrName = e.attrName || '';
+        this.attrChange = e.attrChange || 0;
       }
     };
     
@@ -170,11 +185,11 @@
      */
     extensions.UIEvent = {
       inheritance: 'Event',
-      initEvent: function (originalEvent, data) {
-        var e = originalEvent || {}, d = data || {};
+      initEvent: function (originalEvent) {
+        var e = originalEvent || {};
 
-        this.detail = e.detail || d.detail || 0;
-        this.view = e.view || d.view || null;
+        this.detail = e.detail || 0;
+        this.view = e.view || null;
       }
     };
     
@@ -191,10 +206,10 @@
      */
     extensions.FocusEvent = {
       inheritance: 'UIEvent',
-      initEvent: function (originalEvent, data) {
-        var e = originalEvent || {}, d = data || {};
+      initEvent: function (originalEvent) {
+        var e = originalEvent || {};
 
-        this.relatedTarget = e.relatedTarget || (e.fromElement === e.target ? e.toElement : e.fromElement) || d.relatedTarget || null;
+        this.relatedTarget = e.relatedTarget || (e.fromElement === e.target ? e.toElement : e.fromElement) || null;
       }
     };
 
@@ -226,23 +241,23 @@
         DOM_KEY_LOCATION_RIGHT: 0x02,
         DOM_KEY_LOCATION_NUMPAD: 0x03
       },
-      initEvent: function (originalEvent, data) {
-        var e = originalEvent || {}, d = data || {};
+      initEvent: function (originalEvent) {
+        var e = originalEvent || {};
 
-        this.key = e.key || d.key || '';
-        this.location = e.location || d.location || 0;
+        this.key = e.key || '';
+        this.location = e.location || 0;
 
-        this.ctrlKey = e.ctrlKey || d.ctrlKey || false;
-        this.shiftKey = e.shiftKey || d.shiftKey || false;
-        this.altKey = e.altKey || d.altKey || false;
-        this.metaKey = e.metaKey || d.metaKey || false;
+        this.ctrlKey = e.ctrlKey || false;
+        this.shiftKey = e.shiftKey || false;
+        this.altKey = e.altKey || false;
+        this.metaKey = e.metaKey || false;
 
-        this.repeat = e.repeat || d.repeat || false;
+        this.repeat = e.repeat || false;
 
         // legacy
-        this.charCode = e.charCode || d.charCode || 0;
-        this.keyCode = e.keyCode || d.keyCode || 0;
-        this.which = e.which || d.which || 0;
+        this.charCode = e.charCode || 0;
+        this.keyCode = e.keyCode || 0;
+        this.which = e.which || 0;
       },
       methods: {
         getModifierState: function (key) {
@@ -257,10 +272,10 @@
      */
     extensions.InputEvent = {
       inheritance: 'UIEvent',
-      initEvent: function (originalEvent, data) {
-        var e = originalEvent || {}, d = data || {};
+      initEvent: function (originalEvent) {
+        var e = originalEvent || {};
 
-        this.data = e.data || d.data || '';
+        this.data = e.data || '';
       }
     };
 
@@ -277,10 +292,10 @@
      */
     extensions.CompositionEvent = {
       inheritance: 'Event',
-      initEvent: function (originalEvent, data) {
-        var e = originalEvent || {}, d = data || {};
+      initEvent: function (originalEvent) {
+        var e = originalEvent || {};
 
-        this.data = e.data || d.data || '';
+        this.data = e.data || '';
       }
     };
 
@@ -307,22 +322,22 @@
      */
     extensions.MouseEvent = {
       inheritance: 'UIEvent',
-      initEvent: function (originalEvent, data) {
-        var e = originalEvent || {}, d = data || {};
+      initEvent: function (originalEvent) {
+        var e = originalEvent || {};
 
-        this.screenX = e.screenX || d.screenX || 0;
-        this.screenY = e.screenY || d.screenY || 0;
-        this.clientX = e.clientX || d.clientX || 0;
-        this.clientY = e.clientY || d.clientY || 0;
+        this.screenX = e.screenX || 0;
+        this.screenY = e.screenY || 0;
+        this.clientX = e.clientX || 0;
+        this.clientY = e.clientY || 0;
 
-        this.ctrlKey = e.ctrlKey || d.ctrlKey || false;
-        this.shiftKey = e.shiftKey || d.shiftKey || false;
-        this.altKey = e.altKey || d.altKey || false;
-        this.metaKey = e.metaKey || d.metaKey || false;
+        this.ctrlKey = e.ctrlKey || false;
+        this.shiftKey = e.shiftKey || false;
+        this.altKey = e.altKey || false;
+        this.metaKey = e.metaKey || false;
 
-        this.button = e.button || d.button || 0;
-        this.buttons = e.buttons || d.buttons || 0;
-        this.relatedTarget = e.relatedTarget || (e.fromElement === e.target ? e.toElement : e.fromElement) || d.relatedTarget || null;
+        this.button = e.button || 0;
+        this.buttons = e.buttons || 0;
+        this.relatedTarget = e.relatedTarget || (e.fromElement === e.target ? e.toElement : e.fromElement) || null;
       },
       methods: {
         getModifierState: function (key) {
@@ -363,13 +378,13 @@
         DOM_DELTA_LINE: 0x01,
         DOM_DELTA_PAGE: 0x02
       },
-      initEvent: function (originalEvent, data) {
-        var e = originalEvent || {}, d = data || {};
+      initEvent: function (originalEvent) {
+        var e = originalEvent || {};
 
-        this.deltaX = e.deltaX || d.deltaX || 0;
-        this.deltaY = e.deltaY || d.deltaY || 0;
-        this.deltaZ = e.deltaZ || d.deltaZ || 0;
-        this.deltaMode = e.deltaMode || d.deltaMode || 0;
+        this.deltaX = e.deltaX || 0;
+        this.deltaY = e.deltaY || 0;
+        this.deltaZ = e.deltaZ || 0;
+        this.deltaMode = e.deltaMode || 0;
 
         this.wheelDelta = e.wheelDelta || -40 * e.detail || 0;
       },
@@ -404,6 +419,7 @@
           }
         }
       }
+      return new Event('CustomEvent');
     };
 
     return DOMEvent;
