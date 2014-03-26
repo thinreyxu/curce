@@ -1,8 +1,8 @@
 require.config({
-  baseUrl: '../../src/'
+  baseUrl: '../../../src'
 });
 
-require(['array'], function (array) {
+require(['deprecated/array'], function (array) {
   var arr = [1,2,3,4,5,6,7,8,9,0];
 
   console.group('array.filter()');
