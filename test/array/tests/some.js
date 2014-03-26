@@ -28,11 +28,11 @@ define(['array'], function (array) {
     equal(result2, false, 'none in the array is not a number');
   });
 
-  test('.some()', function () {
-    var result = array(arr).some(someCallback, arr).result();
-    equal(result, false, 'none in the array is greater than 10');
+  // test('.some()', function () {
+  //   var result = array(arr).some(someCallback, arr).result();
+  //   equal(result, false, 'none in the array is greater than 10');
 
-    var result2 = array(arr).some(someCallback2).result();
-    equal(result2, false, 'none in the array is not a number');
-  });
+  //   var result2 = array(arr).some(someCallback2).result();
+  //   equal(result2, false, 'none in the array is not a number');
+  // });
 });

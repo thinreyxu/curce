@@ -28,11 +28,11 @@ define(['array'], function (array) {
     equal(result2, true, 'every item in the array is a number');
   });
 
-  test('.every()', function () {
-    var result = array(arr).every(everyCallback, arr).result();
-    equal(result, false, 'not every item in the array is odd');
+  // test('.every()', function () {
+  //   var result = array(arr).every(everyCallback, arr).result();
+  //   equal(result, false, 'not every item in the array is odd');
 
-    var result2 = array(arr).every(everyCallback2).result();
-    equal(result2, true, 'every item in the array is a number');
-  });
+  //   var result2 = array(arr).every(everyCallback2).result();
+  //   equal(result2, true, 'every item in the array is a number');
+  // });
 });

@@ -8,33 +8,43 @@
   }
 
   function init () {
-    var arrayProto = Array.prototype
-      , oldArrayProtoMethods = ['join', 'pop', 'push', 'concat', 'reverse', 'shift', 'unshift', 'slice', 'splice', 'sort']
-      , newArrayProtoMethods = ['filter', 'forEach', 'some', 'every', 'map', 'indexOf', 'lastIndexOf', 'reduce', 'reduceRight']
-      , omMethods = ['concat', 'push', 'slice', 'filter', 'map', 'compact']
-      , call = Function.prototype.call;
 
-    function NeoArray (arr) {
-      if (arr instanceof NeoArray) {
-        return arr;
+    var arrayProto = Array.prototype,
+        methods = 'join pop push concat reverse shift unshift slice splice sort filter forEach some every map indexOf lastIndexOf reduce reduceRight'.split(' '),
+        newArrayProtoMethods = 'filter forEach forEachRight some every map indexOf lastIndexOf reduce reduceRight'.split(' ');
+
+    function NeoArray () {}
+
+    // 添加现有的方法
+    forEach(methods, function (name) {
+      if (name in arrayProto) {
+        var fn = arrayProto[name];
+        NeoArray[name] = function (array) {
+          args = arrayProto.slice.call(arguments, 1);
+          return fn.apply(array, args);
+        };
       }
-      if (this instanceof NeoArray === false) {
-        return new NeoArray(arr);
+    });
+
+    /**
+     * [forEach]
+     */
+    function forEach (array, callback) {
+      var len = array.length;
+      for (var i = 0; i < array.length; i++) {
+        callback.call(array, array[i], i, array);
+        i -= len - array.length;
+        len = array.length;
       }
-      this._wrapped = arr || [];
     }
 
-    // 定义新方法
-    for (var i = 0; i < newArrayProtoMethods.length; i++) {
-      !function (i) {
-        var method = newArrayProtoMethods[i];
-        if (method in arrayProto) {
-          NeoArray[method] = function () {
-            return call.apply(arrayProto[method], arguments);
-          };
-        }
-      }(i);
+    function forEachRight (array, callback) {
+      for (var i = len - 1; i >= 0; i--) {
+        callback.call(array, array[i], i, array);
+      }
     }
+
+
     if (!arrayProto.filter) {
       NeoArray.filter = function filter (arr, callback, context) {
         var result = [];
@@ -47,6 +57,7 @@
         return result;
       };
     }
+
     if (!arrayProto.forEach) {
       NeoArray.forEach = function forEach (arr, callback, context) {
         context = (context === undefined ? null : context);
@@ -57,6 +68,7 @@
         }
       };
     }
+
     if (!arrayProto.some) {
       NeoArray.some = function some (arr, callback, context) {
         context = (context === undefined ? null : context);
@@ -70,6 +82,7 @@
         return false;
       };
     }
+
     if (!arrayProto.every) {
       NeoArray.every = function every (arr, callback, context) {
         context = (context === undefined ? null : context);
@@ -83,6 +96,7 @@
         return true;
       };
     }
+
     if (!arrayProto.map) {
       NeoArray.map = function map (arr, callback, context) {
         var result = [], len = arr.length;
@@ -95,6 +109,7 @@
         return result;
       };
     }
+
     if (!arrayProto.indexOf) {
       NeoArray.indexOf = function indexOf (arr, item, from) {
         var len = arr.length;
@@ -102,18 +117,20 @@
           from = 0;
         }
         for (var i = from; i < len; i++) {
-          if (isNaN(item) && typeof item === 'number' 
-            && isNaN(arr[i]) && typeof arr[i] === 'number'
-            || item === arr[i] && i in arr) {
+          if (isNaN(item) && typeof item === 'number' &&
+              isNaN(arr[i]) && typeof arr[i] === 'number' ||
+              item === arr[i] && i in arr)
+          {
             return i;
           }
         }
         return -1;
-      }
+      };
     }
+
     if (!arrayProto.lastIndexOf) {
       NeoArray.lastIndexOf = function lastIndexOf (arr, item, from) {
-        var len = arr.length
+        var len = arr.length;
         if (from === undefined || from > len - 1) {
           from = len - 1;
         }
@@ -121,19 +138,21 @@
           from = from + len;
         }
         for (var i = from; i >= 0; i--) {
-          if (isNaN(item) && typeof item === 'number' 
-            && isNaN(arr[i]) && typeof arr[i] === 'number'
-            || item === arr[i] && i in arr) {
+          if (isNaN(item) && typeof item === 'number' &&
+              isNaN(arr[i]) && typeof arr[i] === 'number'||
+              item === arr[i] && i in arr)
+          {
             return i;
           }
         }
         return -1;
       };
     }
+
     if (!arrayProto.reduce) {
       NeoArray.reduce = function reduce (arr, callback, initValue) {
         var i = 0, len = arr.length;
-        if (2 in arguments === false) {
+        if (initValue === undefined) {
           initValue = arr[i++];
         }
         for (; i < len; i++) {
@@ -145,10 +164,10 @@
       };
     }
 
-    if (!arrayProto.reduce) {
+    if (!arrayProto.reduceRight) {
       NeoArray.reduceRight = function reduceRight (arr, callback, initValue) {
         var len = arr.length, i = len - 1;
-        if (2 in arguments === false) {
+        if (initValue === undefined) {
           initValue = arr[i--];
         }
         for (; i >= 0; i--) {
@@ -179,72 +198,6 @@
       return newArr;
     };
 
-    NeoArray.prototype.value = function () {
-      return this._wrapped;
-    };
-    NeoArray.prototype.result = function () {
-      return this._result !== undefined ? this._result : this._wrapped;
-    };
-    NeoArray.prototype.valueOf = function () {
-      return this._wrapped.valueOf();
-    };
-    NeoArray.prototype.toString = function () {
-      return this._wrapped.toString();
-    };
-
-    // 添加原型方法
-    for (var method in NeoArray) {
-      !function (method) {
-        if (NeoArray.hasOwnProperty(method) && typeof NeoArray[method] === 'function') {
-          if (method in arrayProto) {
-            NeoArray.prototype[method] = function () {
-              var result = arrayProto[method].apply(this._wrapped, arguments)
-                , ret = new NeoArray(this._wrapped);
-              ret._result = result;
-              return ret;
-            };
-          }
-          else {
-            NeoArray.prototype[method] = function () {
-              var result = NeoArray[method].apply(this._wrapped, [this._wrapped].concat(arrayProto.slice.call(arguments)))
-                , ret = new NeoArray(this._wrapped);
-              ret._result = result;
-              return ret;
-            };
-          }
-        }
-      }(method);
-    }
-    for (var i = 0; i < omMethods.length; i++) {
-      !function () {
-        var method = omMethods[i];
-        if (method in arrayProto) {
-          NeoArray.prototype[method + '_'] = function () {
-            return new NeoArray(arrayProto[method].apply(this._wrapped, arguments));
-          }
-        }
-        else {
-          NeoArray.prototype[method + '_'] = function () {
-            return new NeoArray(NeoArray[method].apply(this._wrapped, [this._wrapped].concat(arrayProto.slice.call(arguments))));
-          }
-        }
-      }();
-    }
-    // 处理旧 Array 方法
-    for (var i = 0; i < oldArrayProtoMethods.length; i++) {
-      !function () {
-        var method = oldArrayProtoMethods[i];
-        NeoArray[method] = function () {
-          return call.apply(arrayProto[method], arguments);
-        };
-        NeoArray.prototype[method] = function () {
-          var result = arrayProto[method].apply(this._wrapped, arguments)
-            , ret = new NeoArray(this._wrapped);
-          ret._result = result;
-          return ret;
-        };
-      }(i);
-    }
 
     return NeoArray;
   }

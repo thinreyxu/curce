@@ -28,11 +28,11 @@ define(['array'], function (array) {
     deepEqual(step, [9,8,7,6,5,4,3,2,1], 'the item arguments from each step should be 9,8,7,6,5,4,3,2,1');
   });
 
-  test('.forEachRight()', function () {
-    array(arr).forEachRight(forEachRightCallback, arr);
-    deepEqual(arr, [1,2,3,4,5,6,7,8,9], 'the original array must not be changed');
-    deepEqual(result, [18,16,14,12,10,8,6,4,2], 'the result should be [18,16,14,12,10,8,6,4,2]');
-    deepEqual(step, [9,8,7,6,5,4,3,2,1], 'the item arguments from each step should be 9,8,7,6,5,4,3,2,1');
-  });
+  // test('.forEachRight()', function () {
+  //   array(arr).forEachRight(forEachRightCallback, arr);
+  //   deepEqual(arr, [1,2,3,4,5,6,7,8,9], 'the original array must not be changed');
+  //   deepEqual(result, [18,16,14,12,10,8,6,4,2], 'the result should be [18,16,14,12,10,8,6,4,2]');
+  //   deepEqual(step, [9,8,7,6,5,4,3,2,1], 'the item arguments from each step should be 9,8,7,6,5,4,3,2,1');
+  // });
 
 });

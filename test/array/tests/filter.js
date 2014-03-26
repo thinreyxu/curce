@@ -16,12 +16,12 @@ define(['array'], function (array) {
     equal(result.length, 5, 'length of the result array should be 5.');
     deepEqual(result, [1,3,5,7,9], 'result should be [1,3,5,7,9].');
   });
-  test('.filter()', function () {
-    filterCallback.once = false;
-    var result = array(arr).filter_(filterCallback, arr).filter_(function (item) {
-      return item % 3;
-    }).result();
-    equal(result.length, 3, 'length of the result array should be 3.');
-    deepEqual(result, [1,5,7], 'result should be [1,5,7].');
-  });
+  // test('.filter()', function () {
+  //   filterCallback.once = false;
+  //   var result = array(arr).filter_(filterCallback, arr).filter_(function (item) {
+  //     return item % 3;
+  //   }).result();
+  //   equal(result.length, 3, 'length of the result array should be 3.');
+  //   deepEqual(result, [1,5,7], 'result should be [1,5,7].');
+  // });
 });
