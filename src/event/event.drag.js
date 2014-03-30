@@ -1,13 +1,13 @@
 (function (_exports) {
   if (window.define) {
-    define(['event/event', 'extend'], init);
+    define(['extend', 'event/event'], init);
   }
   else {
     _exports = _exports.curce || (_exports.curce = {});
-    init(_exports.event, _exprots.extend);
+    init(_exprots.extend, _exports.event);
   }
 
-  function init (event, extend) {
+  function init (extend, event) {
 
     var processor = {
       beforeAdd: function (listener) {
@@ -50,9 +50,10 @@
      */
     function addEventForDesktop (el) {
 
-      var initValues = getInitValues(el);
+      event.on(el, 'mousedown', function (ev_start) {
+        ev_start.preventDefault();
+        ev_start.stopPropagation();
 
-      event.on(el, 'mousedown', function (evst) {
         var element = document;
 
         var dragging = false;
@@ -62,33 +63,32 @@
           element = el;
           el.setCapture();
         }
-        else {
-          evst.preventDefault();
-        }
+
+        var evt_start = createEvent('dragstart', ev_start);
+
 
         event.on(element, 'mousemove', onmousemove);
         event.on(element, 'mouseup', onmouseup);
 
         function onmousemove (ev) {
+          ev.stopPropagation();
+
           if (!dragging) {
             dragging = true;
-            var evt = event.createEvent('dragstart', evst, initValues);
-            evt.type = 'dragstart';
-            event.emit(el, evt);
+            event.emit(el, evt_start);
           }
           if (dragging) {
-            var evt = event.createEvent('dragmove', ev, initValues);
-            evt.type = 'dragmove';
-            event.emit(el, evt);
+            event.emit(el, createEvent('dragmove', ev));
           }
         }
 
         function onmouseup (ev) {
+
+          ev.stopPropagation();
+
           if (dragging) {
             dragging = false;
-            var evt = event.createEvent('dragend', ev, initValues);
-            evt.type = 'dragend';
-            event.emit(el, evt);
+            event.emit(el, createEvent('dragend', ev));
           }
           if (element.releaseCapture) {
             element.releaseCapture();
@@ -108,58 +108,68 @@
 
       el.data.touchID = undefined;
 
-      event.on(el, 'touchstart', function (evst) {
-        console.log(evst);
-        evst.preventDefault();
-        // evst.stopPropagation();
+      event.on(el, 'touchstart', function (ev_start) {
+
+        ev_start.preventDefault();
+        ev_start.stopPropagation();
         
         // 只允许跟随第一个手指移动
         if (el.data.touchID !== undefined) {
           return;
         }
 
-        var touch = evst.changedTouches[0];
-        
-        initValues = getInitValues (el, touch);
+        var touch = ev_start.changedTouches[0];
         el.data.touchID = touch.identifier;
+
+        var evt_start = createEvent('dragstart', touch);
 
         var dragging = false;
 
         event.on(el, 'touchmove', ontouchmove);
         event.on(el, 'touchend', ontouchend);
-        // event.on(el, 'touchcancel', ontouchend);
+        event.on(el, 'touchcancel', ontouchend);
 
         function ontouchmove (ev) {
+
+          ev.stopPropagation();
+
           if (!dragging) {
             dragging = true;
-            var evt = event.createEvent('dragstart', evst, initValues);
-            evt.type = 'dragstart';
-            event.emit(el, evt);
+            event.emit(el, evt_start);
           }
           var touch = getTouchesById(el.data.touchID, ev.targetTouches);
           if (touch && dragging) {
-            initValues = getInitValues (el, touch);
-            var evt = event.createEvent('dragmove', ev, initValues);
-            evt.type = 'dragmove';
-            event.emit(el, evt);
+            event.emit(el, createEvent('dragmove', touch));
           }
         }
 
         function ontouchend (ev) {
+
+          ev.stopPropagation();
+
           var touch = getTouchesById(el.data.touchID, ev.changedTouches);
           if (touch) {
             if (dragging) {
-              initValues = getInitValues (el, touch);
-              var evt = event.createEvent('dragend', ev, initValues);
-              evt.type = 'dragend';
-              event.emit(el, evt);
+              dragging = false;
+              event.emit(el, createEvent('dragend', touch));
             }
             el.data.touchID = undefined;
             event.off(el, 'touchmove', ontouchmove);
             event.off(el, 'touchend', ontouchend);
-            // event.off(el, 'touchcancel', ontouchend);
+            event.off(el, 'touchcancel', ontouchend);
           }
         }
+      }, false);
+    }
+
+    function createEvent (type, data) {
+      return event.createEvent(type, {
+        clientX: data.clientX,
+        clientY: data.clientY,
+        pageX: data.pageX,
+        pageY: data.pageY,
+        screenX: data.screenX,
+        screenY: data.screenY
       });
     }
 
@@ -172,14 +182,6 @@
         }
       }
       return touch;
-    }
-
-    function getInitValues (el, alternative) {
-      return extend(false, {
-        target: el,
-        delegateTarget: el,
-        currentTarget: el
-      }, alternative);
     }
   }
 })(window);

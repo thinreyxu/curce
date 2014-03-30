@@ -13,13 +13,20 @@ ul {
 .list li,
 .list li span {
   display: inline-block;
+  *display: inline;
+  *zoom: 1;
   padding: 50px;
   background-color: rgba(200, 240, 180, 0.7);
+  background-color: rgb(200, 240, 180)\9;
+  filter: alpha(opacity=70) \9;
   border-radius: 30%;
 }
-.list li.hover,
-.list li.hover span {
+.list li span {
+  background-color: rgb(255, 255, 255);
+}
+.list li.hover {
   background-color: rgba(240, 240, 180, 0.7);
+  background-color: rgb(240, 240, 180)\9;
 }
 .list li:nth-child(8n+1),
 .list li:nth-child(8n+1) span,

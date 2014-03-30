@@ -8,22 +8,22 @@ require(['event/event'], function (event) {
       box2 = document.getElementById('box2'),
       con = document.getElementById('console');
 
-  event.on(box1, 'mouseenter', function (ev, data) {
+  event.on(box1, 'mouseenter', function (ev) {
     log('enter');
-    this.className = 'hover';
+    this.className = 'box hover';
   });
-  event.on(box1, 'mouseleave', function (ev, data) {
+  event.on(box1, 'mouseleave', function (ev) {
     log('leave');
-    this.className = '';
+    this.className = 'box ';
   });
 
-  event.on(box2, 'mouseover', function (ev, data) {
+  event.on(box2, 'mouseover', function (ev) {
     log('over');
-    this.className = 'hover';
+    this.className = 'box hover';
   });
-  event.on(box2, 'mouseout', function (ev, data) {
+  event.on(box2, 'mouseout', function (ev) {
     log('out');
-    this.className = '';
+    this.className = 'box';
   });
 
   function log (msg) {

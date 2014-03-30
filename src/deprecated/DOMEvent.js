@@ -1,14 +1,14 @@
 (function (_exports) {
   if (window.define) {
-    define(init);
+    define(['object', 'extend'], init);
   }
   else {
     _exports = _exports.curce || (_exports.curce = {});
     _exports.event = _exports.event || {};
-    _exports.event_DOMEvent = init();
+    _exports.event_DOMEvent = init(_exports.object, _exports.extend);
   }
 
-  function init () {
+  function init (object) {
 
     function Event (_constructor) {
       this._wrappedEvent = true;
@@ -20,7 +20,8 @@
         this.originalEvent = originalEvent;
       }
 
-      var exts = [], ext,
+      var self = this,
+          exts = [], ext,
           name = this._constructor;
       
       while (name) {
@@ -32,15 +33,11 @@
       while ((ext = exts.shift())) {
         // 扩展常量
         if (ext.constants) {
-          for (var c in ext.constants) {
-            this.constructor[c] = ext.constants[c];
-          }
+          object.forEach(ext.constants, extendClassProp);
         }
         // 扩展实例方法
         if (ext.methods) {
-          for (var m in ext.methods) {
-            this[m] = ext.methods[m];
-          }
+          object.forEach(ext.methods, extendInstanceProp);
         }
         // 执行初始化
         if (ext.initEvent) {
@@ -53,6 +50,14 @@
         for (var i in initValues) {
           this[i] = initValues[i];
         }
+      }
+
+      function extendClassProp (value, name, obj) {
+        self.constructor[name] = value;
+      }
+
+      function extendInstanceProp (value, name, obj) {
+        self[name] = value;
       }
 
       return this;
@@ -68,13 +73,13 @@
      * };
      */
     extensions.Event = {
-      constants: {    
-        // PhaseType
-        NONE: 0,             // 未分派
-        CAPTURING_PHASE: 1,  // 捕获阶段
-        AT_TARGET: 2,        // 在事件源
-        BUBBLING_PHASE: 3    // 冒泡阶段
-      },
+      // constants: {    
+      //   // PhaseType
+      //   NONE: 0,             // 未分派
+      //   CAPTURING_PHASE: 1,  // 捕获阶段
+      //   AT_TARGET: 2,        // 在事件源
+      //   BUBBLING_PHASE: 3    // 冒泡阶段
+      // },
       initEvent: function (originalEvent) {
         var e = originalEvent || {};
 
@@ -142,13 +147,12 @@
     extensions.CustomEvent = {
       inheritance: 'Event',
       initEvent: function (originalEvent) {
-        var e = originalEvent || {};    
-
-        for (var item in originalEvent) {
-          if (typeof originalEvent[item] !== 'function') {
-            this[item] = originalEvent[item];
-          }
-        }
+        var e = originalEvent || {};
+        // var self = this;
+        // object.forEach(originalEvent, function (value, name) {
+        //   self[name] = value;
+        // });
+        this.detail = this.detail || null;
       }
     };
 
@@ -157,11 +161,11 @@
      */
     extensions.MutationEvent = {
       inheritance: 'Event',
-      constants: {
-        MODIFICATION: 1,
-        ADDITION: 2,
-        REMOVAL: 3
-      },
+      // constants: {
+      //   MODIFICATION: 1,
+      //   ADDITION: 2,
+      //   REMOVAL: 3
+      // },
       initEvent: function (originalEvent) {
         var e = originalEvent || {};
 
@@ -235,12 +239,12 @@
      */
     extensions.KeyboardEvent = {
       inheritance: 'UIEvent',
-      constants: {
-        DOM_KEY_LOCATION_STANDARD: 0x00,
-        DOM_KEY_LOCATION_LEFT: 0x01,
-        DOM_KEY_LOCATION_RIGHT: 0x02,
-        DOM_KEY_LOCATION_NUMPAD: 0x03
-      },
+      // constants: {
+      //   DOM_KEY_LOCATION_STANDARD: 0x00,
+      //   DOM_KEY_LOCATION_LEFT: 0x01,
+      //   DOM_KEY_LOCATION_RIGHT: 0x02,
+      //   DOM_KEY_LOCATION_NUMPAD: 0x03
+      // },
       initEvent: function (originalEvent) {
         var e = originalEvent || {};
 
@@ -373,11 +377,11 @@
      */
     extensions.WheelEvent = {
       inheritance: 'MouseEvent',
-      constants: {
-        DOM_DELTA_PIXEL: 0x00,
-        DOM_DELTA_LINE: 0x01,
-        DOM_DELTA_PAGE: 0x02
-      },
+      // constants: {
+      //   DOM_DELTA_PIXEL: 0x00,
+      //   DOM_DELTA_LINE: 0x01,
+      //   DOM_DELTA_PAGE: 0x02
+      // },
       initEvent: function (originalEvent) {
         var e = originalEvent || {};
 
@@ -396,30 +400,45 @@
     };
 
     var typeNameMap = {
-      'mouseover mouseout mouseenter mouseleave mousedown mouseup click dbclick': 'MouseEvent',
-      'mousewheel wheel DOMMouseScroll': 'WheelEvent',
-      'beforeinput input': 'InputEvent',
-      'keydown keyup keypress': 'KeyboardEvent',
-      'load unload abort error select resize scroll DOMActive submit reset change': 'UIEvent',
-      'blur focus focusin focusout DOMFocusIn DOMFocusOut': 'FocusEvent',
-      'compositionstart compositionupdate compositionend': 'CompositionEvent',
-      'DOMAttrModified DOMCharacterDataModified DOMNodeInserted DOMNodeInsertedIntoDocument DOMNodeRemoved DOMNodeRemovedFromDocument DOMSubtreeModified': 'MutationEvent'
+      'MouseEvent': 'mouseover mouseout mouseenter mouseleave mousedown mouseup mousemove click dbclick',
+      'WheelEvent': 'mousewheel wheel DOMMouseScroll',
+      'InputEvent': 'beforeinput input',
+      'KeyboardEvent': 'keydown keyup keypress',
+      'UIEvent': 'load unload abort error select resize scroll DOMActive submit reset change',
+      'FocusEvent': 'blur focus focusin focusout DOMFocusIn DOMFocusOut',
+      'CompositionEvent': 'compositionstart compositionupdate compositionend',
+      'MutationEvent': 'DOMAttrModified DOMCharacterDataModified DOMNodeInserted DOMNodeInsertedIntoDocument DOMNodeRemoved DOMNodeRemovedFromDocument DOMSubtreeModified'
     };
 
     var DOMEvent = {};
       
     DOMEvent.createEvent = function (name) {
-      if (name in extensions) {
-        return new Event(name);
+      var eventName = 'CustomEvent';
+      if (!extensions[name]) {
+        object.forEach(typeNameMap, function (evTypes, evName, map) {
+          if (evTypes.indexOf(name) !== -1) {
+            eventName = evName;
+            return object.breaker;
+          }
+        });
+      }
+      return new Event(eventName);
+    };
+
+    DOMEvent.extendExt = function (name, ext) {
+      var names = name.match(/[\S]+/g) || [];
+      for (var i = 0; i < names.length; i++) {
+        extensions[names[i]] = ext;
+      }
+    };
+
+    DOMEvent.extendMap = function (name, types) {
+      if (name in typeNameMap) {
+        typeNameMap[name] += ' ' + types;
       }
       else {
-        for (var types in typeNameMap) {
-          if (types.indexOf(name) !== -1) {
-            return new Event(typeNameMap[types]);
-          }
-        }
+        typeNameMap[name] = types;
       }
-      return new Event('CustomEvent');
     };
 
     return DOMEvent;

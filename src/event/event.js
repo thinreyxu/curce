@@ -1,13 +1,13 @@
 (function (_exports) {
   if (typeof define === 'function' && define.amd) {
-    define(['selector', 'dom', 'extend', 'event/util', 'event/DOMEvent'], init);
+    define(['selector', 'dom', 'extend', 'object', 'event/util'], init);
   }
   else {
     _exports = _exports.curce || (_exports.curce = {});
-    _exports.event = init(_exports.query, _exports.dom, _exports.extend, _exports.event_util, _exports.event_DOMEvent);
+    _exports.event = init(_exports.query, _exports.dom, _exports.extend, _exports.object, _exports.event_util);
   }
 
-  function init (query, dom, extend, util, DOMEvent) {
+  function init (query, dom, extend, object, util) {
 
     var listeners = [];     // 事件监听器
 
@@ -88,54 +88,35 @@
      * 1. event.emit(el, type[, data])
      * 2. event.emit(el, Event[, data])
      */
-    event.emit = function emit (el, type, data) {
+    event.emit = function emit (el, type) {
       var ev;
+
       if (typeof type === 'object') {
-        // (el, Event[, data])
         ev = type;
         type = ev.type;
       }
-      else {
-        // (el, type[, data]);
-        ev = createEvent(type);
-        ev.type = type;
+
+      var triggerType = type;
+      var processor = processors[type] || {};
+      if (processor.transType) {
+        triggerType = processor.transType(type);
       }
+
+      if (ev) {
+        initEvent(ev, { type: triggerType });
+      }
+      else {
+        ev = createEvent(triggerType);
+      }
+
+      var data = [].slice.call(arguments, 2);
+      ev.storage = data;  // 使用 data 命名在 IE678 会有问题
 
       ev.target = el;
-      ev.delegateTarget = el;
+      ev.delegatedTarget = el;
+      ev.currentTarget = el;
 
-      // 事件冒泡链
-      var bubblePath = [el];
-      while(el.parentNode) {
-        bubblePath.push(el = el.parentNode);
-      }
-
-      // 沿着冒泡链分派事件
-      var currentTarget;
-      var ontype = 'on' + type;
-
-      while (ev.bubbles && !ev.propagationStopped && (ev.currentTarget = bubblePath.shift() || null)) {
-
-        // 分派注册的事件
-        dispatchEvent(ev, data);
-
-        // 触发 0 级 DOM 事件
-        if (typeof ev.currentTarget[ontype] === 'function') {
-          ev.currentTarget[ontype](ev, data);
-        }
-      }
-
-      // 触发 click() focus() 等方法
-      var tmp;
-
-      if (typeof el[type] === 'function') {
-        avoidEventType = type;
-        tmp = el[ontype];
-        el[ontype] = null;
-        el[type]();
-        el[ontype] = tmp;
-        avoidEventType = '';
-      }
+      dispatchEvent(el, ev);
     };
 
     /**
@@ -212,16 +193,21 @@
         return;
       }
 
+      if (processor.transType) {
+        listener.bindType = processor.transType(listener.type);
+      }
+
       // 创建包装后的事件处理函数
       listener.bindHandler = function (ev) {
+
         // 避免在使用 event.emit() 是调用如 click() 等方法再次执行
         if (avoidEventType && ev.type === avoidEventType) {
           return;
         }
 
         // 初始化自定义事件对象
-        listener.ev = createEvent(ev.type, util.getEventObject(ev));
-        listener.ev.delegateTarget = listener.el;
+        listener.ev = initEvent(util.getEvent(ev));
+        listener.ev.delegatedTarget = listener.el;
         listener.ev.currentTarget = listener.el;
 
         // 执行事件监听器
@@ -258,17 +244,22 @@
     function executeEventListener (listener) {
       var processor = processors[listener.type] || {};
 
+      var emitData = listener.ev.storage;  // 派发事件时的数据存储于 ev 之上  // 使用 data 命名在 IE678 会有问题
+      listener.ev.storage = listener.data; // 换成注册时的数据  // 使用 data 命名在 IE678 会有问题
+
       // 委托事件
       if (listener.selector) {
+
         var els = query(listener.selector, listener.el);
         for (var i = 0; i < els.length; i++) {
+
           if (dom.contains(els[i], listener.ev.target, true)) {
-            listener.ev.currentTarget = els[i];
+            listener.ev.delegatedTarget = els[i];
             // 过滤事件
             if (processor.beforeExecute && processor.beforeExecute(listener) === false) {
               continue;
             }
-            var ret = listener.handler.call(listener.context || els[i], listener.ev, listener.data);
+            var ret = listener.handler.apply(listener.context || els[i], [listener.ev].concat(emitData));
             if (ret === false) {
               listener.ev.preventDefault();
             }
@@ -282,13 +273,14 @@
           return;
         }
         // 调用事件处理函数
-        var ret = listener.handler.call(listener.context || listener.el, listener.ev, listener.data);
+        var ret = listener.handler.apply(listener.context || listener.el, [listener.ev].concat(emitData));
         if (ret === false) {
           listener.ev.preventDefault();
         }
       }
 
       // 重置事件对象
+      listener.ev.storage = emitData;  // 将派发事件时的数据重新存回 ev,以便事件冒泡  // 使用 data 命名在 IE678 会有问题
       listener.ev = null;
 
       // 移除已经执行了指定次数的监听器
@@ -301,35 +293,168 @@
      * [createEvent]
      * 创建事件
      */
-    function createEvent (type, ev, initValues) {
-      initValues = initValues || {};
-      if (!ev || ev.type === undefined) initValues.type = initValues.type || type;
-      if (!ev || ev.bubbles === undefined) initValues.bubbles = initValues.bubbles || true;
-      if (!ev || ev.cancelable === undefined) initValues.cancelable = initValues.cancelable || true;
-      return DOMEvent.createEvent(type).initEvent(ev, initValues);
+    function createEvent (type, initValues) {
+
+      var processor = processors[type] || {};
+      if (processor.transType) {
+        type = processor.transType();
+      }
+
+      // 创建事件对象
+      var ev = util.createEvent(type);
+
+      initEvent(ev, initValues);
+
+      return ev;
     }
+
+    function initEvent (ev, initValues) {
+      
+      initValues = initValues || {};
+
+      util.initEvent(
+        initValues.type !== undefined ? initValues.type : ev.type,
+        initValues.bubbles !== undefined ? initValues.bubbles : ev.bubbles,
+        initValues.cancelable !== undefined ? initValues.cancelable : ev.cancelable
+      );
+      // ev.type = ev.eventType || ev.type || '';
+      ev.target = ev.target || ev.srcElement || null;
+      ev.currentTarget = ev.currentTarget || null;
+      ev.bubbles = ev.bubbles !== undefined ? ev.bubbles : true;
+      ev.cancelable = ev.cancelable !== undefined ? ev.cancelable : true;
+      ev.timeStamp = ev.timeStamp || new Date().getTime();
+      ev.defaultPrevented = ev.defaultPrevented || false;
+      ev.isTrusted = ev.isTrusted || true;
+
+      // 鼠标事件
+      if (typeNameMap.MouseEvent.indexOf(ev.type) > -1 || typeNameMap.WheelEvent.indexOf(ev.type) > -1) {
+        ev.relatedTarget = ev.relatedTarget || (ev.fromElement === ev.target ? ev.toElement : ev.fromElement) || null;
+      }
+
+      // 鼠标滚轮事件
+      if (typeNameMap.WheelEvent.indexOf(ev.type) > -1) {
+        if ('wheelDelta' in ev === false) {
+          ev.wheelDelta = ev.wheelDelta || (ev.detail && -40 * ev.detail) || 0;
+        }
+      }
+
+      ev.propagationStopped = false;
+      ev.immediatePropagationStopped = false;
+
+      // preventDefault
+      var _preventDefault = ev.preventDefault;
+      ev.preventDefault = function () {
+        if (_preventDefault) {
+          _preventDefault.call(this);
+        }
+        else {
+          this.returnValue = false;
+        }
+        this.defaultPrevented = true;
+      };
+
+      // stopPropagation
+      var _stopPropagation = ev.stopPropagation;
+      ev.stopPropagation = function () {
+        if (_stopPropagation) {
+          _stopPropagation.call(this);
+        }
+        else {
+          this.cancelBubble = true;
+        }
+        this.propagationStopped = true;
+      };
+
+      // stopImmediatePropagation
+      // 实际上在 IE 中不能停止同一元素上的其他事件处理器的调用,只能停止冒泡
+      var _stopImmediatePropagation = ev.stopImmediatePropagation;
+      ev.stopImmediatePropagation = function () {
+        if (_stopImmediatePropagation) {
+          _stopImmediatePropagation.call(this);
+        }
+        else {
+          this.cancelBubble = true;
+        }
+        this.propagationStopped = true;
+        this.immediatePropagationStopped = true;
+      };
+
+      // 初始值
+      if (typeof initValues === 'object') {
+        object.forEach(initValues, function (value, name) {
+          if (name === 'type' || name === 'bubbles' || name === 'cancelable') {
+            return;
+          }
+          // console.log(value, name);
+          ev[name] = value;
+        });
+      }
+    
+      return ev;
+    }
+
+    var typeNameMap = {
+      'MouseEvent': 'mouseover mouseout mouseenter mouseleave mousedown mouseup mousemove click dbclick',
+      'WheelEvent': 'mousewheel wheel DOMMouseScroll',
+      'InputEvent': 'beforeinput input',
+      'KeyboardEvent': 'keydown keyup keypress',
+      'UIEvent': 'load unload abort error select resize scroll DOMActive submit reset change',
+      'FocusEvent': 'blur focus focusin focusout DOMFocusIn DOMFocusOut',
+      'CompositionEvent': 'compositionstart compositionupdate compositionend',
+      'MutationEvent': 'DOMAttrModified DOMCharacterDataModified DOMNodeInserted DOMNodeInsertedIntoDocument DOMNodeRemoved DOMNodeRemovedFromDocument DOMSubtreeModified'
+    };
 
     /**
      * [dispatchEvent]
      * 分派事件
      */
-    function dispatchEvent (ev, data) {
-      var len = listeners.length;
-      for (var i = 0; i < listeners.length; i++) {
-        var listener = listeners[i];
+    function dispatchEvent (el, ev) {
+      util.dispatchEvent(el, ev, customDispatchEvent);
+    }
 
-        if (ev.currentTarget !== listener.el) continue;
-        if (ev.type !== listener.type) continue;
+    function customDispatchEvent (el, ev) {
+       // 事件冒泡链
+      var bubblePath = [];
+      while(el.parentNode) {
+        bubblePath.push(el = el.parentNode);
+      }
 
-        var allData = extend({}, listener.data, data);
+      var ontype = 'on' + ev.type;
+      // 沿着冒泡链分派事件
+      do {
+        // 分派注册的事件
+        var len = listeners.length;
+        for (var i = 0; i < listeners.length; i++) {
+          var listener = listeners[i];
 
-        listener.ev = ev;
-        
-        executeEventListener(listener);
+          if (ev.currentTarget !== listener.el) continue;
+          if (ev.type !== listener.type) continue;
 
-        // 修正因移除监听器导致的变化
-        i -= len - listeners.length;
-        len = listeners.length; 
+          listener.ev = ev;
+          
+          executeEventListener(listener);
+
+          // 修正因移除监听器导致的变化
+          i -= len - listeners.length;
+          len = listeners.length; 
+        }
+
+        // 触发 0 级 DOM 事件
+        if (typeof ev.currentTarget[ontype] === 'function') {
+          ev.currentTarget[ontype](ev, data);
+        }
+      } while (ev.bubbles && !ev.propagationStopped && (ev.currentTarget = bubblePath.shift() || null));
+
+      // 触发 click() focus() 等方法
+      var tmp;
+
+      if (typeof el[ev.type] === 'function') {
+        avoidEventType = ev.type;
+        tmp = el[ontype];
+        el[ontype] = null;
+        el[ev.type]();
+        el[ontype] = tmp;
+        avoidEventType = '';
       }
     }
 
@@ -339,13 +464,12 @@
     //////////////////////////////////////
     (function () {
       var processor = {
-        beforeAdd: function (listener) {
-          listener.bindType = listener.type === 'mouseenter' ? 'mouseover' : 'mouseout';
+        transType: function (type) {
+          return type === 'mouseenter' ? 'mouseover' : 'mouseout';
         },
         beforeExecute: function (listener) {
           var ev = listener.ev;
-          var relatedTarget = ev.relatedTarget;
-          if (dom.contains(ev.currentTarget, ev.relatedTarget, true)) {
+          if (dom.contains(ev.delegatedTarget || ev.currentTarget, ev.relatedTarget, true)) {
             return false;
           }
           return true;
@@ -365,15 +489,14 @@
     //////////////////////////////////////
     (function () {
       var processor = {
-        beforeAdd: function (listener) {
-          if ('onwheel' in document) {
-            listener.bindType = 'wheel';
-          }
-          else if ('onmousewheel' in document) {
-            listener.bindType = 'mousewheel';
+        transType: function (type) {
+          // 不能使用 onwheel 事件,截至写下次注释时,ff 31.0a1 (2014-03-29)
+          // 虽然支持 onwheel 事件,可事件对象中却没有和滚动方向有关的值
+          if ('onmousewheel' in document) {
+            return 'mousewheel';
           }
           else {
-            listener.bindType = 'DOMMouseScroll';
+            return 'DOMMouseScroll';
           }
         }
       };
