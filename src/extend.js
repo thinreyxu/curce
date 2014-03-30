@@ -1,40 +1,42 @@
 (function (_exports) {
   if (window.define) {
-    define(init);
+    define(['object'], init);
   }
   else {
     _exports = _exports.curce || (_exports.curce = {});
-    _exports.extend = init();
+    _exports.extend = init(_exports.object);
   }
 
-  function init () {
+  function init (object) {
+    
     function extend () {
-      var deep = true
-        , args = [].slice.call(arguments)
-        , length
-        , result
-        , arg;
+      var deep = false,
+          args = [].slice.call(arguments);
 
-      (typeof args[0] === 'boolean') && (deep = args.shift());
-      result = args.shift();
-      length = args.length;
+      if (typeof args[0] === 'boolean') {
+        deep = args.shift();
+      }
 
-      for (var i = 0; i < length; i++) {
-        arg = args[i];
-        for (var item in arg) {
-          if (arg.hasOwnProperty(item)) {
-            if (typeof arg[item] === 'object' && deep) {
-              result[item] = extend({}, arg[item]);
-            }
-            else {
-              result[item] = arg[item];
-            }
+      var result = args.shift();
+
+      for (var i = 0; i < args.length; i++) {
+        object.forEach(args[i], populate);
+      }
+
+      function populate (value, name, arg) {
+        if (arg.hasOwnProperty(name)) {
+          if (typeof value === 'object' && deep) {
+            result[name] = extend({}, value);
+          }
+          else {
+            result[name] = value;
           }
         }
       }
 
       return result;
     }
+
     return extend;
   }
 })(window);

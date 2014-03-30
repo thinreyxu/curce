@@ -10,52 +10,29 @@
   function init () {
     var NeoObject = function () {};
     
-    NeoObject.isOfType = isOfType;
-    function isOfType (obj, type) {
-      return type === getType(obj);
-    }
+    NeoObject.breaker = {};
 
-    // 这太不靠谱，只能检验内置类型
-    NeoObject.getType = getType;
-    function getType (obj) {
-      var type = typeof obj;
-      if (type !== 'object') {
-        return type;
-      }
-      else {
-        var str = Object.prototype.toString.call(obj);
-        return str.substring(8, str.length - 1);
-      }
-    }
-
-    NeoObject.extend = extend;
-    function extend () {
-      var deep = true
-        , args = [].slice.call(arguments)
-        , length
-        , result
-        , arg;
-
-      (typeof args[0] === 'boolean') && (deep = args.shift());
-      result = args.shift();
-      length = args.length;
-
-      for (var i = 0; i < length; i++) {
-        arg = args[i];
-        for (var item in arg) {
-          if (arg.hasOwnProperty(item)) {
-            if (typeof arg[item] === 'object' && deep) {
-              result[item] = extend({}, arg[item]);
-            }
-            else {
-              result[item] = arg[item];
-            }
-          }
+    NeoObject.forEach = Object.keys ?
+    function forEach (obj, callback) {
+      if (!obj || typeof obj !== 'object') return;
+      var keys = Object.keys(obj);
+      for (var i = 0; i < keys.length; i++) {
+        var name = keys[i];
+        var ret = callback.call(obj, obj[name], name, obj);
+        if (ret === NeoObject.breaker) {
+          break;
         }
       }
-
-      return result;
-    }
+    } :
+    function forEach (obj, callback) {
+      if (typeof obj !== 'object') return;
+      for (var name in obj) {
+        var ret = callback.call(obj, obj[name], name, obj);
+        if (ret === NeoObject.breaker) {
+          break;
+        }
+      }
+    };
 
     return NeoObject;
   }
