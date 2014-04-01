@@ -1,0 +1,30 @@
+{
+  "name": "demo",
+  "version": "0.0.0",
+  "homepage": "https://github.com/thinreyxu/curce",
+  "authors": [
+    "thinreyxu <thinrey.xu@gmail.com>"
+  ],
+  "moduleType": [
+    "amd",
+    "globals"
+  ],
+  "license": "MIT",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "lib",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "modernizr": "~2.7.2",
+    "bootstrap": "~3.0.3",
+    "flat-ui": "*",
+    "sizzle": "~1.10.18",
+    "jquery": "~2.1.0",
+    "requirejs": "~2.1.11"
+  }
+}

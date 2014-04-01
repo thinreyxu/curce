@@ -1,0 +1,23 @@
+#box {
+  width: 200px;
+  height: 200px;
+  background: #aaaaff;
+  background: rgba(128, 128, 255, 0.7);
+  border-radius: 50%;
+  position: absolute;
+}
+
+#console {
+  background: #f2f2f2;
+  /*max-height: 300px;*/
+  font-family: monospace;
+  /*overflow: hidden;*/
+  /*height: 0;*/
+  /*line-height: 0;*/
+  /*font-size: 0;*/
+}
+
+#console .line {
+  height: 20px;
+  line-height: 20px;
+}

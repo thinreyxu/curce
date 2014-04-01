@@ -1,0 +1,27 @@
+body {
+  font-family: Helvetica, Arial, Microsoft Yahei, Wenquanyi Micro Hei,Hiragino Sans GB, STXihei,SimSun,sans-serif;
+  background: #f2f2f2;
+}
+.container {
+  position: relative;
+  width: 600px; height: 600px;
+  margin: 0 auto;
+}
+.box {
+  width: 4px;
+  height: 4px;
+  position: absolute;
+  left: 290px;
+  top: 290px;
+  border-radius: 50%;
+  background: #333;
+}
+.canvas {
+  position: relative;
+}
+#canvas {
+  background: #fff;
+  border-radius: 5px;
+  border: solid 1px #eee;
+  box-shadow: 0 0 8px 0 rgba(224, 224, 244, 0.4);
+}

@@ -1,2 +1,4 @@
 web.config
 .*
+**/node_modules/
+demo/lib

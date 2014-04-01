@@ -1,0 +1,13 @@
+html, body {
+  height: 100%;
+}
+body {
+  background: #f2f2f2;
+}
+canvas {
+  background: #fff;
+  position: absolute;
+  left: 0; top: 0; right: 0; bottom: 0;
+  margin: auto;
+  border: solid 1px #f0f0f0;
+}

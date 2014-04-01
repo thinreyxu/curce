@@ -8,9 +8,9 @@ http.createServer(function (req, res) {
     , qs = ourl.query
     , sleep = parseInt(qs.sleep, 10) || 0
     , headers = [
-        ['origin', 'access-control-allow-origin'],
-        ['access-control-request-method', 'access-control-allow-methods'],
-        ['access-control-request-headers', 'access-control-allow-headers']
+        'origin', 'access-control-allow-origin',
+        'access-control-request-method', 'access-control-allow-methods',
+        'access-control-request-headers', 'access-control-allow-headers'
       ];
 
   console.log('=======================');
@@ -18,9 +18,9 @@ http.createServer(function (req, res) {
 
   res.setHeader('access-control-allow-credentials', 'true');
   res.setHeader('access-control-max-age', 60);
-  for (var i = 0; i < headers.length; i++) {
-    if (headers[i][0] in req.headers) {
-      res.setHeader(headers[i][1], req.headers[headers[i][0]]);
+  for (var i = 0; i < headers.length; i += 2) {
+    if (headers[i] in req.headers) {
+      res.setHeader(headers[i + 1], req.headers[headers[i]]);
     }
   }
 

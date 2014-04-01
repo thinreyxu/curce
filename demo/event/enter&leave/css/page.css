@@ -1,0 +1,47 @@
+h2 {
+  font-size: 18px;
+}
+.case {
+  float: left;
+  margin-right: 20px;
+}
+#console {
+  line-height: 2;
+  font-family: monospace;
+  font-size: 12px;
+  overflow: hidden;
+  border: solid 1px #f2f2f2;
+  width: 200px;
+  height: 230px;
+  padding: 10px;
+}
+#console time {
+  color: #999;
+}
+.box {
+  display: inline-block;
+  *display: inline;
+  *zoom: 1;
+  border-radius: 5% 30%;
+}
+.box div,
+.box p {
+  font-size: 0;
+  padding: 20px;
+  display: inline-block;
+  *display: inline;
+  *zoom: 1;
+  border-radius: 5% 30%;
+  border: solid 1px rgb(150, 180, 135);
+}
+.box div {
+  background-color: rgba(200, 240, 180, 0.3);
+  background-color: rgb(200, 240, 180)\9;
+}
+.box p {
+  background: rgb(255, 255, 255);
+}
+.hover div {
+  background-color: rgba(240, 240, 180, 0.3);
+  background-color: rgb(240, 240, 180)\9;
+}

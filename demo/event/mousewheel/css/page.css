@@ -1,0 +1,10 @@
+body {
+  width: 3000px;
+  height: 3000px;
+  background: lightgrey;
+}
+
+#console {
+  font-size: 100px;
+  color: #fff;
+}

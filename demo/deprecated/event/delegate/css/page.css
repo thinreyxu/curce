@@ -1,0 +1,43 @@
+ul {
+  margin: 0;
+  padding: 0;
+}
+.list {
+  font-size: 0;
+  width: 840px;
+  margin: 30px auto;
+}
+.list li {
+  margin: 5px;
+}
+.list li,
+.list li span {
+  display: inline-block;
+  padding: 50px;
+  background-color: rgba(200, 240, 180, 0.7);
+  border-radius: 30%;
+}
+.list li.hover,
+.list li.hover span {
+  background-color: rgba(240, 240, 180, 0.7);
+}
+.list li:nth-child(8n+1),
+.list li:nth-child(8n+1) span,
+.list li:nth-child(8n+3),
+.list li:nth-child(8n+3) span,
+.list li:nth-child(8n+6),
+.list li:nth-child(8n+6) span,
+.list li:nth-child(8n+8),
+.list li:nth-child(8n+8) span {
+  border-radius: 5% 30%;
+}
+.list li:nth-child(8n+2),
+.list li:nth-child(8n+2) span,
+.list li:nth-child(8n+4),
+.list li:nth-child(8n+4) span,
+.list li:nth-child(8n+5),
+.list li:nth-child(8n+5) span,
+.list li:nth-child(8n+7),
+.list li:nth-child(8n+7) span {
+  border-radius: 30% 5%;
+}
