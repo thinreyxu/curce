@@ -5,9 +5,9 @@ require.config({
 require(['eventemitter'], function (EventEmitter) {
   var em = new EventEmitter();
 
-  em.on('connection', onConnection, null, { name: 'contextFromOn'});
-  em.on('data', onData, { registerTime: new Date().toLocaleString() });
-  em.on('close', onClose, null, { name: 'contextFromOn' });
+  em.on('connection', { name: 'contextFromOn'}, onConnection, null);
+  em.on('data', { registerTime: new Date().toLocaleString() }, onData);
+  em.on('close', { name: 'contextFromOn' }, onClose, null);
 
   var id_1 = 'ids2d593d';
   em.emit('connection', { user: id_1 });

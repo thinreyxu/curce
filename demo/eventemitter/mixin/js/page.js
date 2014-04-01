@@ -13,11 +13,11 @@ require(['eventemitter', 'mixin'], function (EventEmitter, mixin) {
     }
 
     Container.prototype.add = function (child) {
-      this.emit('add', { child: child });
+      this.emit({ type: 'add', child: child });
     };
 
     Container.prototype.remove = function (child) {
-      this.emit('remove', { child: child });
+      this.emit({ type: 'remove', child: child });
     };
 
     mixin(Container.prototype, EventEmitter.prototype);
@@ -32,18 +32,18 @@ require(['eventemitter', 'mixin'], function (EventEmitter, mixin) {
   container.on('add', onChildAdd);
   container.on('remove', onChildRemove);
 
-  container.onAdd(onChildAdd, { from: 'onAdd' });
-  container.onRemove(onChildRemove, { from: 'onRemove' });
+  container.onAdd({ from: 'onAdd' }, onChildAdd);
+  container.onRemove({ from: 'onRemove' }, onChildRemove);
 
   container.add({ id: '3nd02ndk' });
-  container.remove({id: '9i3n8heb' });
+  container.remove({ id: '9i3n8heb' });
 
 
-  function onChildAdd (ev, data) {
-    console.log('Child added: %o', data.child);
+  function onChildAdd (ev) {
+    console.log('Child added: %o', ev.child);
   }
 
-  function onChildRemove (ev, data) {
-    console.log('Child removed: %o', data.child);
+  function onChildRemove (ev) {
+    console.log('Child removed: %o', ev.child);
   }
 });
