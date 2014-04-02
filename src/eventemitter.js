@@ -19,29 +19,33 @@
 
     /**
      * 订阅
-     * @param  {String}   type     事件类型
+     * @param  {String}   type     事件类型，可为空格分割的多个类型名称
      * @param  {Object}   [data]   数据
-     * @param  {Function} callback 事件处理器
+     * @param  {Function} handler  事件处理器
      * @param  {[type]}   context  this
      */
-    EventEmitter.prototype.on = function (type, data, callback, context) {
+    EventEmitter.prototype.on = function (type, data, handler, context) {
       if (typeof data === 'function') {
-        // ( type, callback, context )
-        context = callback;
-        callback = data;
+        // ( type, handler, context )
+        context = handler;
+        handler = data;
         data = undefined;
       }
-      on.call(this, this._listeners, type, data, callback, context);
+      on.call(this, this._listeners, type, data, handler, context);
       return this;
     };
 
     /**
      * 取消订阅
      * @param  {String}   [type]      事件类型
-     * @param  {Function} [callback]  事件处理器
+     * @param  {Function} [handler]   事件处理器
      */
-    EventEmitter.prototype.off = function (type, callback) {
-      off.call(this, this._listeners, type, callback);
+    EventEmitter.prototype.off = function (type, handler) {
+      if (typeof type === 'function') {
+        handler = type;
+        type = undefined;
+      }
+      off.call(this, this._listeners, type, handler);
       return this;
     };
 
@@ -63,87 +67,82 @@
      *                                    为字符串时，可以是空格分割的多个事件名
      */
     EventEmitter.extendHandler = function (o, types) {
-
       if (typeof types === 'string') {
         types = types.match(/\S+/g) || [];
       }
       for (var i = 0; i < types.length; i++) {
         extendHandler(o, types[i]);
       }
-      
+      return this;
     };
 
     function extendHandler (o, type) {
       var capped = type.charAt(0).toUpperCase() + type.substring(1);
-      o['on' + capped] = function (data, callback, context) {
+      o['on' + capped] = function (data, handler, context) {
         if (typeof data === 'function') {
-          context = callback;
-          callback = data;
+          context = handler;
+          handler = data;
           data = undefined;
         }
-        return on.call(this, this._listeners, type, data, callback, context);
+        return on.call(this, this._listeners, type, data, handler, context);
       };
     }
 
     /**
      * 订阅
      */
-    function on (listeners, type, data, callback, context) {
-      listeners[type] = listeners[type] || [];
-
-      var listener = {
-        type: type,
-        callback: callback,
-        data: data || null,
-        context: context || null
-      };
-      listeners[type].push(listener);
-
-      return this;
+    function on (listeners, type, data, handler, context) {
+      var types = type instanceof [].constructor ? type : (type.match(/\S+/g) || []);
+      for (var i = 0; i < types.length; i++) {
+        type = types[i];
+        listeners[type] = listeners[type] || [];
+        var listener = {
+          type: type,
+          handler: handler,
+          data: data || null,
+          context: context || null
+        };
+        listeners[type].push(listener);
+      }
     }
 
     /**
      * 取消订阅
      */
-    function off (listeners, type, callback) {
-      if (typeof type === 'undefined') {
-        // ( listeners )
-        for (var item in listeners) {
-          if (listeners.hasOwnProperty(item)) {
-            delete listeners[item];
-          }
-        }
+    function off (listeners, type, handler) {
+
+      var types;
+      if (type instanceof [].constructor) {
+        types = type;
       }
-      else if (typeof type === 'function') {
-        // ( listeners, callback )
-        callback = type;
-        type = undefined;
-        for (var item in listeners) {
-          var callbacks = listeners[item];
-          for (var i = 0; i < callbacks.length; i++) {
-            if (callbacks[i].callback === callback) {
-              callbacks.splice(i--, 1);
-            }
-          }
-        }
+      else if (typeof type === 'string' && type !== '*') {
+        types = type.match(/\S+/g) || [];
       }
-      else if (typeof type === 'string' && typeof callback === 'undefined' && type in listeners) {
-        // ( listeners, type )
-        delete listeners[type];
-      }
-      else if (typeof type === 'string' && typeof callback === 'function') {
-        // ( listeners, type, callback )
-        var callbacks = listeners[type];
-        if (callbacks) {
-          for (var i = 0; i < callbacks.length; i++) {
-            if (callbacks[i].callback === callback) {
-              callbacks.splice(i--, 1);
-            }
-          }
+      else if (typeof type === 'undefined' || type === '*') {
+        types = [];
+        for (var key in listeners) {
+          types.push(key);
         }
       }
 
-      return this;
+      for (var i = 0; i < types.length; i++) {
+        type = types[i];
+        if (type in listeners) {
+          if (typeof handler === 'function') {
+            // ( listeners, type, handler )
+            var handlers = listeners[type];
+            for (var j = 0; j < handlers.length; j++) {
+              if (handlers[j].handler === handler) {
+                handlers.splice(j--, 1);
+              }
+            }
+          }
+          else if (typeof handler === 'undefined') {
+            // ( listeners, type )
+            delete listeners[type];
+          }
+        }
+      }
     }
 
     /**
@@ -163,7 +162,7 @@
         for (var i = 0; i < ls.length; i++) {
           var l = ls[i];
           l.data && (ev.data = l.data);
-          l.callback.apply(l.context || this, [ev].concat(data));
+          l.handler.apply(l.context || this, [ev].concat(data));
         }
       }
     }
