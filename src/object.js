@@ -34,6 +34,16 @@
       }
     };
 
+    NeoObject.keys = Object.keys ?
+    Object.keys :
+    function keys (obj) {
+      var thekeys = [];
+      for (var key in obj) {
+        thekeys.push(key);
+      }
+      return thekeys;
+    };
+
     return NeoObject;
   }
 })(window);
