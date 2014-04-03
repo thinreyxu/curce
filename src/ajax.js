@@ -1,13 +1,13 @@
 (function (_exports) {
-  if (window.define) {
-    define(['uuid', 'extend', 'querystring', 'url'], init);
+  if (typeof define === 'function' && define.amd) {
+    define(['curce/uid', 'curce/extend', 'curce/querystring', 'curce/url'], init);
   }
   else {
     _exports = _exports.curce || (_exports.curce = {});
-    _exports.ajax = init(_exports.uuid, _exports.extend, _exports.querystring, _exporsts.url);
+    _exports.ajax = init(_exports.uid, _exports.extend, _exports.querystring, _exporsts.url);
   }
 
-  function init (uuid, extend, querystring, ourl) {
+  function init (uid, extend, querystring, ourl) {
 
     var defaults = {
       method: 'GET',
@@ -18,14 +18,14 @@
     };
 
     function ajax (url, options) {
-      var s = {}
-        , timer = null
-        , aborted = false
-        , complete = false
-        , cors = false
-        , curlocation
-        , reqLocation
-        , xhr;
+      var s = {},
+          timer = null,
+          aborted = false,
+          complete = false,
+          cors = false,
+          curlocation,
+          reqLocation,
+          xhr;
 
       // 处理参数url
       if (typeof url === 'object') {
@@ -48,9 +48,10 @@
           }
         }
 
-        if (reqLocation.protocol !== curLocation.protocol
-          || reqLocation.hostname !== curLocation.hostname
-          || reqLocation.port !== curLocation.port) {
+        if (reqLocation.protocol !== curLocation.protocol ||
+            reqLocation.hostname !== curLocation.hostname ||
+            reqLocation.port !== curLocation.port)
+        {
           cors = true;
         }
       }
@@ -61,12 +62,11 @@
       // 无法创建xhr对象，结束ajax()
       if (xhr === null) {
         throw new Error('Cannot create XHR object.');
-        return;
       }
 
       // 设置选项
       s = extend(s, defaults, options);
-      'url' in s && delete s.url;
+      if ('url' in s) delete s.url;
 
       // 序列化数据
       if (s.data && typeof s.data === 'object') {
@@ -77,7 +77,7 @@
       // 拼接查询字符串
       if ((s.method === 'GET' || s.method === 'DELETE')) {
         url += url.indexOf('&') != -1 ? '&' : '?';
-        url += (s.data ? s.data + '&' : '') + 't=' + uuid.uuid();
+        url += (s.data ? s.data + '&' : '') + 't=' + uid();
       }
 
       // 设置xhr属性
@@ -132,8 +132,7 @@
       // 完成处理
       function onLoad () {
         onComplete();
-        if (xhr.status >=200 && xhr.status < 300 || xhr.status === 304)
-        {
+        if (xhr.status >=200 && xhr.status < 300 || xhr.status === 304) {
           s.success && s.success.call(s.context, xhr.responseText, xhr);
         }
         else {

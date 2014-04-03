@@ -1,6 +1,6 @@
 (function (_exports) {
   if (typeof define === 'function' && define.amd) {
-    define(['router/HashRouter', 'router/StateRouter'], init);
+    define(['curce/router/HashRouter', 'curce/router/StateRouter'], init);
   }
   else {
     _exports = _exports.curce || (_exports.curce = {});

@@ -1,8 +1,10 @@
 require.config({
-  baseUrl: '../../../src/'
+  paths: {
+    curce: '../../../../src'
+  }
 });
 
-require(['event/event', 'event/event.ready'], function (event) {
+require(['curce/event/event', 'curce/event/event.ready'], function (event) {
   event.on(document, 'ready', function (ev) {
     console.log('ready');
   });

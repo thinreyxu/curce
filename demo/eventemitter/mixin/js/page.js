@@ -1,8 +1,10 @@
 require.config({
-  baseUrl: '../../../src/'
+  paths: {
+    curce: '../../../../src'
+  }
 });
 
-require(['eventemitter', 'mixin'], function (EventEmitter, mixin) {
+require(['curce/eventemitter', 'curce/mixin'], function (EventEmitter, mixin) {
 
   var Container = (function () {
 

@@ -1,8 +1,10 @@
 require.config({
-  baseUrl: '../../../src/'
+  paths: {
+    curce: '../../../../src'
+  }
 });
 
-require(['router/HashRouter'], function (HashRouter) {
+require(['curce/router/HashRouter'], function (HashRouter) {
 
   console = typeof console !== 'undefined' ? console : {};
   var consoleMethods = ['log'];
@@ -14,7 +16,7 @@ require(['router/HashRouter'], function (HashRouter) {
 
   var router = new HashRouter({
     silence: false,
-    root: 'host/'
+    root: ''
   });
 
   router.route('/', function () {

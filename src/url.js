@@ -1,6 +1,6 @@
 (function (_exports) {
-  if (window.define) {
-    define(['querystring'], init);
+  if (typeof define === 'function' && define.amd) {
+    define(['curce/querystring'], init);
   }
   else {
     _exports = _exports.curce || (_exports.curce = {});
@@ -18,13 +18,19 @@
       [7]:search
       [8]:hash
     */
-    var rurl = /^((?:((?:http|https|file):)\/\/)?(([\w\-]+(?:\.[\w\-]+)*)(?::(\d+))?)?)((?:[\/\w&.]+)*)(\?[\w%\-+.=&]*)?(#[\w\-]*)?$/
-      , rprotocol = /^(?:http|https|file):/;
+    var rurl = /^((?:((?:http|https|file):)\/\/)?(([\w\-]+(?:\.[\w\-]+)*)(?::(\d+))?)?)((?:[\/\w&.]+)*)(\?[\w%\-+.=&]*)?(#[\w\-]*)?$/,
+        rprotocol = /^(?:http|https|file):/;
 
+    /**
+     * 判断是否为绝对地址
+     */
     function isAbs (url) {
       return rprotocol.test(url);
     }
 
+    /**
+     * 转换相对地址为绝对地址
+     */
     function abs (url) {
       if (!(url = url.replace(/^\s+|\s+$/g, ''))) {
         return '';
@@ -57,6 +63,9 @@
       return result;
     }
 
+    /**
+     * 解析 url 字符串为 url 对象
+     */
     function parse (surl, parseQueryString) {
       var result = null, tmp;
       parseQueryString = parseQueryString || false;
@@ -64,14 +73,14 @@
       if (typeof surl === 'string' && (surl = surl.replace(/^\s+|\s+$/g)) !== ''){
         result = {};
         if (isAbs(surl)) {
-          if (tmp = rurl.exec(surl)) {
+          if ((tmp = rurl.exec(surl))) {
             result.origin = tmp[1];
             result.protocol = tmp[2];
             result.host = tmp[3];
             result.hostname = tmp[4];
             result.port = tmp[5];
             result.pathname = tmp[6];
-            result.search = tmp[7]
+            result.search = tmp[7];
             result.hash = tmp[8];
 
             if (parseQueryString && result.search) {
@@ -90,6 +99,9 @@
       return result;
     }
 
+    /**
+     * 节点 url 对象转换为 url 字符串
+     */
     function stringify (ourl) {
       var result = '';
 
@@ -131,6 +143,9 @@
       return result;
     }
 
+    /**
+     * 便捷方法：将当前 location 地址转换为 url 对象
+     */
     function location (parseQueryString) {
       parseQueryString = parseQueryString || false;
       return parse(window.location.href, parseQueryString);

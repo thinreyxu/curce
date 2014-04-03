@@ -1,9 +1,9 @@
 require.config({
-  baseUrl: '../../../src/'
+  paths: {
+    curce: '../../../../src'
+  }
 });
 
-require(['dom'], function (dom) {
-  console.log(dom.contains(document.documentElement, document.body));
-  console.log(dom.contains(document.documentElement, document.body));
-  console.log(dom.contains(document.documentElement, document.body));
+require(['curce/dom'], function (dom) {
+  console.log(dom.contains(document.documentElement, document.body));  // true
 });

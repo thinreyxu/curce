@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>The url.parse() and url.stringify() Demo</title>
-  <link rel="stylesheet" href="http://getbootstrap.com/dist/css/bootstrap.css">
+  <link rel="stylesheet" href="../../lib/bootstrap/dist/css/bootstrap.css">
   <link rel="stylesheet" href="css/page.css">
 </head>
 <body>
@@ -20,7 +20,7 @@
         <h3 class="control-label">Url string</h3>
         <textarea class="form-control" id="taString" cols="30" rows="10"></textarea>
         <h4>Sample</h4>
-        <pre>http://thinreyxu.github.io:80/curce/demo/url/parse&stringify/parse&stringify.html?id=curce&t=3dne83hf#page1</pre>
+        <pre>http://thinreyxu.github.io:80/curce/demo/url/parse&amp;stringify/parse&amp;stringify.html?id=curce&amp;t=3dne83hf#page1</pre>
       </div>
       <div class="col-sm-2">
         <button id="btnParse" type="button" class="btn btn-md btn-primary btn-block"><i class="glyphicon glyphicon-chevron-right"></i> Parse</button>
@@ -38,14 +38,14 @@
   "protocol": "http:",
   "hostname": "thinreyxu.github.io",
   "port": "80",
-  "pathname": "/curce/demo/url/parse&stringify/parse&stringify.html/",
-  "search": "?id=curce&t=3dne83hf",
+  "pathname": "/curce/demo/url/parse&amp;stringify/parse&amp;stringify.html/",
+  "search": "?id=curce&amp;t=3dne83hf",
   "hash": "#page1"
 }</pre>
       </div>
     </div>
   </div>
 
-  <script data-main="js/page.js" src="http://requirejs.org/docs/release/2.1.8/minified/require.js"></script>
+  <script data-main="js/page.js" src="../../lib/requirejs/require.js"></script>
 </body>
 </html>

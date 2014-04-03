@@ -1,8 +1,10 @@
 require.config({
-  baseUrl: '../../../src'
+  paths: {
+    curce: '../../../../src'
+  }
 });
 
-require(['event/event', 'event/event.drag', 'raf'], function (event) {
+require(['curce/event/event', 'curce/event/event.drag', 'curce/raf'], function (event) {
 
   var box = document.getElementById('box');
   var left = 0, top = 0, downLeft, downTop;

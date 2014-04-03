@@ -1,6 +1,6 @@
 (function (_exports) {
   if (typeof define === 'function' && define.amd) {
-    define(['mixin', 'collection'], init);
+    define(['curce/mixin', 'curce/collection'], init);
   }
   else {
     _exports = _exports.curce || (_exports.curce = {});

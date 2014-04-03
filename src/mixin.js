@@ -1,5 +1,5 @@
 (function (_exports) {
-  if (window.define && define.amd) {
+  if (typeof define === 'function' && define.amd) {
     define(init);
   }
   else {

@@ -1,5 +1,5 @@
 (function (_exports) {
-  if (window.define) {
+  if (typeof define === 'function' && define.amd) {
     define(init);
   }
   else {
@@ -9,82 +9,42 @@
 
   function init () {
     
-    var functionProto = Function.prototype
-      , oldFunctionProtoMethods = ['call', 'apply']
-      , newFunctionProtoMethods = ['bind']
-      , call = Function.prototype.call;
+    var functionProto = Function.prototype,
+        methods = 'call apply bind'.split(' '),
+        call = Function.prototype.call;
 
-    function NeoFunction (func) {
-      if (this instanceof NeoFunction === false) {
-        return new NeoFunction(func);
+    function NeoFunction () {}
+
+    for (var i = 0; i < methods.length; i++) {
+      var name = methods[i];
+      if (functionProto.hasOwnProperty(name)) {
+        NeoFunction[name] = function (fn) {
+          var args = [].slice.call(arguments, 1);
+          return functionProto[name].apply(fn, args);
+        };
       }
-      this._wrapped = func;
-      this.length = func.length;
-      this.name = func.name;
-    }
-
-    NeoFunction.prototype.valueOf = function () {
-      return this._wrapped.valueOf();
-    };
-
-    NeoFunction.prototype.toString = function () {
-      return this._wrapped.toString();
-    };
-
-    for (var i = 0; i < newFunctionProtoMethods.length; i++) {
-      !function () {
-        var method = newFunctionProtoMethods[i];
-        if (method in functionProto) {
-          NeoFunction[method] = function () {
-            return call.apply(functionProto[method], arguments);
-          };
-        }
-      }();
     }
 
     if (!functionProto.bind) {
-      NeoFunction.bind = function (NeoFunction, context) {
-        var args = Array.prototype.slice.call(arguments, 2);
+      NeoFunction.bind = function (fn, context) {
+        if (typeof fn !== "function") {
+          return fn;
+        }
 
+        var args = [].slice.call(arguments, 2);
+
+        // 保证使用 new _fn()得到的对象是 fn 类型
         function _proto () {}
-        _proto.prototype = NeoFunction.prototype;
+        _proto.prototype = fn.prototype;
 
         function _fn () {
-          return NeoFunction.apply(this instanceof _proto ? this : context, args.concat(Array.prototype.slice.call(arguments)));
+          // 保证使用 new _fn() 时，可以正确的初始化
+          return fn.apply(this instanceof _proto ? this : context, args.concat([].slice.call(arguments)));
         }
         _fn.prototype = new _proto();
 
         return _fn;
-      }
-    }
-
-    for (var method in NeoFunction) {
-      !function (method) {
-        if (NeoFunction.hasOwnProperty(method) && typeof NeoFunction[method] === 'function') {
-          if (method in functionProto) {
-            NeoFunction.prototype[method] = function () {
-              return functionProto[method].apply(this._wrapped, arguments);
-            }
-          }
-          else {
-            NeoFunction.prototype[method] = function () {
-              return NeoFunction[method].apply(this._wrapped, [this._wrapped].concat(Array.prototype.slice.call(arguments)));
-            }
-          }
-        }
-      }(method);
-    }
-
-    for (var i = 0; i < oldFunctionProtoMethods.length; i++) {
-      !function () {
-        var method = oldFunctionProtoMethods[i];
-        NeoFunction[method] = function () {
-          return call.apply(functionProto[method], arguments);
-        };
-        NeoFunction.prototype[method] = function () {
-          return functionProto[method].apply(this._wrapped, arguments);
-        };
-      }();
+      };
     }
 
     return NeoFunction;

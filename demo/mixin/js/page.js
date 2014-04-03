@@ -1,8 +1,10 @@
 require.config({
-  baseUrl: '../../src/'
+  paths: {
+    curce: '../../../../src'
+  }
 });
 
-require(['mixin'], function (mixin) {
+require(['curce/mixin'], function (mixin) {
 
   var Creature = (function () {
 
@@ -14,7 +16,7 @@ require(['mixin'], function (mixin) {
         console.log('I jumped %s meters high.', (Math.random() * 10).toFixed(2));
       },
       swim: function () {
-        console.log('Sorry, I cannot swim.')
+        console.log('Sorry, I cannot swim.');
       }
     };
 

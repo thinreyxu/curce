@@ -1,6 +1,6 @@
 (function (_exports) {
-  if (window.define) {
-    define(['querystring', 'extend', 'string', 'object'], init);
+  if (typeof define === 'function' && define.amd) {
+    define(['curce/querystring', 'curce/extend', 'curce/string', 'curce/object'], init);
   }
   else {
     _exports = _exports.curce || (_exports.curce = {});

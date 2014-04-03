@@ -1,6 +1,6 @@
 // v0.1.0
 (function (_exports) {
-  if (window.define) {
+  if (typeof define === 'function' && define.amd) {
     define(init);
   }
   else {

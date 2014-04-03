@@ -1,8 +1,10 @@
 require.config({
-  baseUrl: '../../../src/'
+  paths: {
+    curce: '../../../../src'
+  }
 });
 
-require(['router/r2re'], function (R2RE) {
+require(['curce/router/r2re'], function (R2RE) {
   var r2re = new R2RE();
 
   r2re.use(['regexp', 'escapeRegExp', 'namedParam', 'splatParam', 'wildcard']);

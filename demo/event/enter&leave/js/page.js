@@ -1,8 +1,10 @@
 require.config({
-  baseUrl: '../../../src/'
+  paths: {
+    curce: '../../../../src'
+  }
 });
 
-require(['event/event'], function (event) {
+require(['curce/event/event'], function (event) {
 
   var box1 = document.getElementById('box1'),
       box2 = document.getElementById('box2'),

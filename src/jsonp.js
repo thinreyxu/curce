@@ -1,13 +1,13 @@
 (function (_exports) {
-  if (window.define) {
-    define(['uuid', 'extend', 'querystring'], init);
+  if (typeof define === 'function' && define.amd) {
+    define(['curce/uid', 'curce/extend', 'curce/querystring'], init);
   }
   else {
     _exports = _exports.curce || (_exports.curce = {});
-    _exports.jsonp = init(_exports.uuid, _exports.extend, _exports.querystring);
+    _exports.jsonp = init(_exports.uid, _exports.extend, _exports.querystring);
   }
 
-  function init (uuid, extend, querystring) {
+  function init (uid, extend, querystring) {
     var defaults, requestPool, jsonpcbs;
 
     defaults = {
@@ -86,9 +86,9 @@
       s = extend({}, defaults, options);  // 深度拷贝对象并存入s中
 
       // 寄存回调到window上以备调用
-      cbname = 'cb' + uuid.uuid();
+      cbname = 'cb' + uid();
       while (window[cbname]) {
-        cbname = 'cb' + uuid.uuid();
+        cbname = 'cb' + uid();
       }
       window[cbname] = function (data) {
         aborted = true;

@@ -1,8 +1,10 @@
 require.config({
-  baseUrl: '../../../src'
+  paths: {
+    curce: '../../../../src'
+  }
 });
 
-require(['event/event'], function (event) {
+require(['curce/event/event'], function (event) {
   var consoe = document.getElementById('console');
   event.on(document, 'mousewheel', function (ev) {
     ev.preventDefault();

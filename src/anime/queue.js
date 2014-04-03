@@ -1,6 +1,6 @@
 (function (_exports) {
   if (window.define) {
-    define(['inherit', 'collection'], init);
+    define(['curce/inherit', 'curce/collection'], init);
   }
   else {
     _exports = _exports.curce || (_exports.curce = {});

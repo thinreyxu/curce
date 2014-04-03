@@ -1,7 +1,9 @@
 requirejs.config({
-  baseUrl: '../../../src'
+  paths: {
+    curce: '../../../../src'
+  }
 });
-require(['ajax', 'url'],
+require(['curce/ajax', 'curce/url'],
   function (ajax, url) {
     var exampleUrl = '../../../src/ajax.js',
         absUrl = url.abs(exampleUrl);

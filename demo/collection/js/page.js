@@ -1,8 +1,10 @@
 require.config({
-  baseUrl: '../../src/'
+  paths: {
+    curce: '../../../src'
+  }
 });
 
-require(['collection'], function (Collection) {
+require(['curce/collection'], function (Collection) {
   var collection = new Collection();
   var item = { name: 'unknown' };
   

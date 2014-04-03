@@ -1,8 +1,10 @@
 require.config({
-  baseUrl: '../../../src/'
+  paths: {
+    curce: '../../../../src'
+  }
 });
 
-require(['router/CompoundRouter'], function (CompoundRouter) {
+require(['curce/router/CompoundRouter'], function (CompoundRouter) {
 
   // patch console methods
   console = typeof console !== 'undefined' ? console : {};
@@ -15,7 +17,7 @@ require(['router/CompoundRouter'], function (CompoundRouter) {
 
   var router = CompoundRouter.create({
     silence: false,
-    root: '/curce/demo/router/CompoundRouter/'
+    root: 'onpopstate' in window ? location.pathname : ''
   });
 
   router.route('/', function () {

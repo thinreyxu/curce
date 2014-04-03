@@ -1,6 +1,6 @@
 (function (_exports) {
   if (typeof define === 'function' && define.amd) {
-    define(['router/Router', 'inherit'], init);
+    define(['curce/router/Router', 'curce/inherit'], init);
   }
   else {
     _exports = _exports.curce || (_exports.curce = {});

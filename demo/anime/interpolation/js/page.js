@@ -1,8 +1,10 @@
 require.config({
-  baseUrl: '../../../src/'
+  paths: {
+    curce: '../../../../src'
+  }
 });
 
-require(['anime/anime', 'anime/easing'], function (Anime) {
+require(['curce/anime/anime', 'curce/anime/easing'], function (Anime) {
 
   var canvas = document.getElementById('canvas'),
       W = canvas.width,

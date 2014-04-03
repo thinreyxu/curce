@@ -1,6 +1,6 @@
 (function (_exports) {
-  if (window.define) {
-    define(['deprecated/event', 'extend'], init);
+  if (typeof define === 'function' && define.amd) {
+    define(['curce/deprecated/event', 'curce/extend'], init);
   }
   else {
     _exports = _exports.curce || (_exports.curce = {});

@@ -1,6 +1,6 @@
 (function (_exports) {
   if (typeof define === 'function' && define.amd) {
-    define(['eventemitter', 'extend', 'router/r2re'], init);
+    define(['curce/eventemitter', 'curce/extend', 'curce/router/r2re'], init);
   }
   else {
     _exports = _exports.curce || (_exports.curce = {});
@@ -25,7 +25,7 @@
     };
 
     extend(Router.prototype, EventEmitter.prototype);
-    EventEmitter.extend(Router.prototype, ['route', 'error']);
+    EventEmitter.extendHandler(Router.prototype, ['route', 'error']);
 
     Router.prototype.init = function (op) {
       this._started = false;

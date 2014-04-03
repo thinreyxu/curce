@@ -1,7 +1,9 @@
 requirejs.config({
-  baseUrl: '../../../src/'
+  paths: {
+    curce: '../../../../src'
+  }
 });
-require(['url'], function (url) {
+require(['curce/url'], function (url) {
   var taOrigin = document.getElementById('taOrigin'),
       taResult = document.getElementById('taResult'),
       btnConvert = document.getElementById('btnConvert');
@@ -16,5 +18,5 @@ require(['url'], function (url) {
     }
 
     taResult.value = resUrls.join('\n');
-  }
+  };
 });

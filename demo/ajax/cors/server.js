@@ -1,13 +1,13 @@
-var http = require('http')
-  , url = require('url')
-  , util = require('util');
+var http = require('http'),
+    url = require('url'),
+    util = require('util');
 
 http.createServer(function (req, res) {
-  var ourl = url.parse(req.url, true)
-    , pathname = ourl.pathname
-    , qs = ourl.query
-    , sleep = parseInt(qs.sleep, 10) || 0
-    , headers = [
+  var ourl = url.parse(req.url, true),
+      pathname = ourl.pathname,
+      qs = ourl.query,
+      sleep = parseInt(qs.sleep, 10) || 0,
+      headers = [
         'origin', 'access-control-allow-origin',
         'access-control-request-method', 'access-control-allow-methods',
         'access-control-request-headers', 'access-control-allow-headers'

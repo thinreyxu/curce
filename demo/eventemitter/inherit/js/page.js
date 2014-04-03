@@ -1,8 +1,10 @@
 require.config({
-  baseUrl: '../../../src/'
+  paths: {
+    curce: '../../../../src'
+  }
 });
 
-require(['eventemitter', 'inherit'], function (EventEmitter, inherit) {
+require(['curce/eventemitter', 'curce/inherit'], function (EventEmitter, inherit) {
 
   var Container = (function () {
 

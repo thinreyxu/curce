@@ -1,13 +1,15 @@
 require.config({
-  baseUrl: '../../../src/'
+  paths: {
+    curce: '../../../../src'
+  }
 });
 
-require(['url'], function (url) {
-  var btnParse = document.getElementById('btnParse')
-    , btnStringify = document.getElementById('btnStringify')
-    , taString = document.getElementById('taString')
-    , taObject = document.getElementById('taObject')
-    , inputParseQuery = document.getElementById('inputParseQuery');
+require(['curce/url'], function (url) {
+  var btnParse = document.getElementById('btnParse'),
+      btnStringify = document.getElementById('btnStringify'),
+      taString = document.getElementById('taString'),
+      taObject = document.getElementById('taObject'),
+      inputParseQuery = document.getElementById('inputParseQuery');
 
   btnParse.onclick = function () {
     var surl, ourl, sourl;

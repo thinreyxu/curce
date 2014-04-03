@@ -1,7 +1,9 @@
 requirejs.config({
-  baseUrl: '../../../src'
+  paths: {
+    curce: '../../../../src'
+  }
 });
-require(['ajax', 'url'],
+require(['curce/ajax', 'curce/url'],
   function (ajax, url) {
     var exampleUrl = 'http://localhost:3000/req';
 
@@ -27,11 +29,11 @@ require(['ajax', 'url'],
       
       btnStart.disabled = true;
       start();
-    }
+    };
 
     btnAbort.onclick = function (e) {
       xhr && xhr.abort();
-    }
+    };
 
     function start () {
       var ourl = inputUrl.value || exampleUrl

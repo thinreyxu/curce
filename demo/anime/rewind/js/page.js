@@ -1,7 +1,9 @@
 requirejs.config({
-  baseUrl: '../../../src/'
+  paths: {
+    curce: '../../../../src'
+  }
 });
-require(['anime/anime'], function (Anime) {
+require(['curce/anime/anime'], function (Anime) {
   var boxes = document.getElementsByClassName('box'),
       canvas = document.getElementById('canvas'),
       gd = canvas.getContext('2d'),

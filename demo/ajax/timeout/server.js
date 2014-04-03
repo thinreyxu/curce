@@ -14,7 +14,7 @@ http.createServer(function (req, res) {
   var timeout = 0;
 
   if (qs && qs.timeout) {
-    var timeout = Math.floor(qs.timeout) + 1000;
+    timeout = Math.floor(qs.timeout) + 1000;
   }
 
   setTimeout(function () {
@@ -25,7 +25,7 @@ http.createServer(function (req, res) {
         }  
         res.setHeader('content-type', mime.lookup(filename));
         res.end(file);
-      })
+      });
     }
     else {
       res.end(util.inspect(qs));
@@ -34,4 +34,4 @@ http.createServer(function (req, res) {
 
 }).listen('3000');
 
-console.log('server is listening at port 3000.')
+console.log('server is listening at port 3000.');

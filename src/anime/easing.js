@@ -1,7 +1,7 @@
 (function (_exports) {
 
   if (typeof define === 'function' && define.amd) {
-    define(['anime/anime'], init);
+    define(['curce/anime/anime'], init);
   }
   else {
     _exports = _exports.curce || (_exports.curce = {});

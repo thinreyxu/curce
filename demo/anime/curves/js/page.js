@@ -1,7 +1,9 @@
 requirejs.config({
-  baseUrl: '../../../src/'
+  paths: {
+    curce: '../../../../src'
+  }
 });
-require(['anime/anime', 'anime/easing'], function (Anime) {
+require(['curce/anime/anime', 'curce/anime/easing'], function (Anime) {
   var easingSel = document.getElementById('select_easing'),
       durationSel = document.getElementById('select_duration'),
       redrawBtn = document.getElementById('btn_redraw');

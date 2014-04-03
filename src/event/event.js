@@ -1,6 +1,6 @@
 (function (_exports) {
   if (typeof define === 'function' && define.amd) {
-    define(['selector', 'dom', 'extend', 'object', 'event/util'], init);
+    define(['curce/selector', 'curce/dom', 'curce/extend', 'curce/object', 'curce/event/util'], init);
   }
   else {
     _exports = _exports.curce || (_exports.curce = {});

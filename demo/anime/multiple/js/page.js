@@ -1,7 +1,9 @@
 requirejs.config({
-  baseUrl: '../../../src/'
+  paths: {
+    curce: '../../../../src'
+  }
 });
-require(['anime/anime'], function (Anime) {
+require(['curce/anime/anime'], function (Anime) {
   Anime.config({ 
     autoStart: false
   });

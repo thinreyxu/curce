@@ -2,7 +2,7 @@ require.config({
   baseUrl: 'js/'
 });
 
-require(['ajax'], function (ajax) {
+require(['curce/ajax'], function (ajax) {
   var btn_send = document.getElementById('send');
   btn_send.onclick = function () {
     var timeout = Math.floor(document.getElementById('timeout').value);

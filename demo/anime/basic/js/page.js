@@ -1,7 +1,9 @@
 requirejs.config({
-  baseUrl: '../../../src/'
+  paths: {
+    curce: '../../../../src'
+  }
 });
-require(['anime/anime', 'anime/easing'], function (Anime) {
+require(['curce/anime/anime', 'curce/anime/easing'], function (Anime) {
   var box = document.getElementById('box');
   var anmime = Anime({x: 0, y: 0})
         .to({x: 300}, 300, 'linear', 1000)

@@ -1,8 +1,10 @@
 require.config({
-  baseUrl: '../../../src/'
+  paths: {
+    curce: '../../../../src'
+  }
 });
 
-require(['eventemitter'], function (EventEmitter) {
+require(['curce/eventemitter'], function (EventEmitter) {
   var em = new EventEmitter();
 
   em.on('connection', { name: 'contextFromOn'}, onConnection, null);

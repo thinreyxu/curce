@@ -1,8 +1,10 @@
 requirejs.config({
-  baseUrl: '../../src/'
-})
+  paths: {
+    curce: '../../../../src'
+  }
+});
 
-require(['jsonp'], function (jsonp) {
+require(['curce/jsonp'], function (jsonp) {
   var URL = 'http://www.wookmark.com/api/json',
 
       nav = document.getElementById('nav'),

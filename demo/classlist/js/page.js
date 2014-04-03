@@ -1,14 +1,17 @@
 require.config({
-  baseUrl: '../../src/'
+  paths: {
+    curce: '../../../../src'
+  }
 });
 
-require(['classlist'], function (classlist) {
-  var boxes = document.getElementsByTagName('li');
+require(['curce/classlist'], function (classlist) {
+  var boxes = document.getElementById('line').getElementsByTagName('li');
 
   var btn_add = document.getElementById('addClass'),
       btn_remove = document.getElementById('removeClass'),
       btn_toggle = document.getElementById('toggleClass'),
       btn_contains = document.getElementById('containsClass');
+
 
   btn_add.onclick = function () {
     for (var i = 0; i < boxes.length; i++) {
@@ -27,7 +30,7 @@ require(['classlist'], function (classlist) {
   };
   btn_contains.onclick = function () {
     for (var i = 0; i < boxes.length; i++) {
-      alert(classlist.contains(boxes[i], 'on'));
+      alert(i + 1 + ':' + classlist.contains(boxes[i], 'on'));
     }
   };
 });

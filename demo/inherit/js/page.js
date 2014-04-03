@@ -1,8 +1,11 @@
 require.config({
-  baseUrl: '../../src/'
+  paths: {
+    curce: '../../../../src'
+  }
+
 });
 
-require(['inherit'], function (inherit) {
+require(['curce/inherit'], function (inherit) {
   
   function Person (name, age) {
     this.name = name;

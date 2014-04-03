@@ -6,7 +6,7 @@
 
 (function (_exports) {
   if (typeof define === 'function' && define.amd) {
-    define(['mixin', 'extend', 'eventemitter', 'anime/queue'], init);
+    define(['curce/mixin', 'curce/extend', 'curce/eventemitter', 'curce/anime/queue'], init);
   }
   else {
     _exports = _exports.curce || (_exports.curce = {});
@@ -472,7 +472,7 @@
     // 添加事件支持，混入 EventEmitter，并扩展独立事件监听器注册方法
     var events = ['start', 'update', 'complete', 'repeat', 'phaseComplete'];
     mixin(Anime.prototype, EventEmitter.prototype);
-    EventEmitter.extend(Anime.prototype, events);
+    EventEmitter.extendHandler(Anime.prototype, events);
 
 
     function getCapture (current) {

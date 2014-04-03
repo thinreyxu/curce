@@ -1,7 +1,9 @@
 require.config({
-  baseUrl: '../../src'
+  paths: {
+    curce: '../../../../src'
+  }
 });
-require(['querystring'], function (qs) {
+require(['curce/querystring'], function (qs) {
   console.group('query');
   var query = {
     name: 'thinrey.xu',

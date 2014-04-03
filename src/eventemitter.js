@@ -1,5 +1,5 @@
 (function (_exports) {
-  if (window.define && define.amd) {
+  if (typeof define === 'function' && define.amd) {
     define(init);
   }
   else {
@@ -84,7 +84,8 @@
           handler = data;
           data = undefined;
         }
-        return on.call(this, this._listeners, type, data, handler, context);
+        on.call(this, this._listeners, type, data, handler, context);
+        return this;
       };
     }
 
